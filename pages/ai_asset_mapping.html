@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Asset Mapping - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen">
+    <!-- Header -->
+    <header class="floating-panel border-b border-border-light sticky top-0 z-50">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="bg-primary-800 p-2 rounded-lg">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-sm text-text-secondary">AI Asset Mapping</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="main_dashboard.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Claims
+                    </a>
+                    <a href="ai_asset_mapping.html" class="text-primary-600 font-medium">
+                        <i class="fas fa-satellite mr-2"></i>AI Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-lightbulb mr-2"></i>Schemes
+                    </a>
+                    <a href="village_analytics.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex items-center gap-2 text-sm text-text-secondary">
+                        <i class="fas fa-shield-alt text-secondary-600"></i>
+                        <span>Secure Session</span>
+                    </div>
+                    <button class="p-2 text-text-secondary hover:text-text-primary transition-colors">
+                        <i class="fas fa-user-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex h-screen pt-20">
+        <!-- Satellite Imagery Viewer -->
+        <div class="flex-1 relative">
+            <!-- WebGIS Map Container -->
+            <div id="satelliteViewer" class="h-full bg-gray-900 relative overflow-hidden">
+                <div id="map" class="w-full h-full"></div>
+                <!-- Processing Status -->
+                <div id="processingStatus" class="absolute bottom-4 left-4 bg-white rounded-lg shadow-md p-3 hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                        <span class="text-sm text-text-primary">Processing imagery...</span>
+                        <span class="text-sm text-text-secondary">67%</span>
+                    </div>
+                    <div class="w-48 bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-primary-600 h-2 rounded-full" style="width: 67%"></div>
+                    </div>
+                </div>
+                <!-- Legend -->
+                <div class="absolute bottom-4 right-4 bg-white rounded-lg shadow-md p-4">
+                    <h3 class="text-sm font-medium text-text-primary mb-3">Land Use Classification</h3>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-secondary-400 rounded"></div>
+                            <span>Agricultural Land</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-green-500 rounded"></div>
+                            <span>Forest Cover</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-blue-400 rounded"></div>
+                            <span>Water Bodies</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-orange-400 rounded"></div>
+                            <span>Homesteads</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-gray-400 rounded"></div>
+                            <span>Unclassified</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Control Panel -->
+        <div class="w-96 bg-surface border-l border-border-light overflow-y-auto">
+            <div class="p-6 space-y-6">
+                <!-- Upload Section -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-upload text-primary-600"></i>
+                        Upload Imagery
+                    </h2>
+                    
+                    <div class="border-2 border-dashed border-border-light rounded-lg p-6 text-center hover:border-primary-300 transition-colors cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-text-secondary mb-2"></i>
+                        <p class="text-sm text-text-secondary mb-2">Drop satellite imagery here or click to browse</p>
+                        <p class="text-xs text-text-secondary">Supports: GeoTIFF, JPEG, PNG (Max: 500MB)</p>
+                        <input type="file" class="hidden" accept=".tiff,.tif,.jpg,.jpeg,.png" />
+                    </div>
+
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-text-secondary">Recent Upload:</span>
+                            <span class="text-text-primary">satellite_2025_01_10.tif</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-text-secondary">Size:</span>
+                            <span class="text-text-primary">247.3 MB</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-text-secondary">Resolution:</span>
+                            <span class="text-text-primary">0.5m/pixel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing Controls -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-cogs text-primary-600"></i>
+                        Processing Controls
+                    </h2>
+
+                    <!-- Algorithm Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-text-primary mb-2">Classification Algorithm</label>
+                        <select class="form-input w-full">
+                            <option value="random_forest">Random Forest</option>
+                            <option value="cnn">Convolutional Neural Network</option>
+                            <option value="svm">Support Vector Machine</option>
+                            <option value="ensemble">Ensemble Method</option>
+                        </select>
+                    </div>
+
+                    <!-- Confidence Threshold -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-text-primary mb-2">
+                            Confidence Threshold: <span id="confidenceValue" class="text-primary-600">85%</span>
+                        </label>
+                        <input type="range" id="confidenceSlider" min="50" max="99" value="85" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                        <div class="flex justify-between text-xs text-text-secondary mt-1">
+                            <span>50%</span>
+                            <span>99%</span>
+                        </div>
+                    </div>
+
+                    <!-- Processing Options -->
+                    <div class="space-y-3 mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-border-light text-primary-600 focus:ring-primary-500" checked />
+                            <span class="ml-2 text-sm text-text-primary">Enable multi-spectral analysis</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                            <span class="ml-2 text-sm text-text-primary">Apply noise reduction</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-border-light text-primary-600 focus:ring-primary-500" checked />
+                            <span class="ml-2 text-sm text-text-primary">Cross-reference with FRA claims</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-2">
+                        <button id="startProcessing" class="btn-primary flex-1 flex items-center justify-center gap-2">
+                            <i class="fas fa-play"></i>
+                            Start Analysis
+                        </button>
+                        <button class="btn-secondary px-4">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Classification Results -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-primary-600"></i>
+                        Classification Results
+                    </h2>
+
+                    <!-- Statistics -->
+                    <div class="space-y-4">
+                        <!-- Agricultural Land -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-text-primary">Agricultural Land</span>
+                                <span class="text-sm font-medium text-text-primary">42.3%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" style="width: 42.3%"></div>
+                            </div>
+                            <div class="text-xs text-text-secondary mt-1">Confidence: 94.2%</div>
+                        </div>
+
+                        <!-- Forest Cover -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-text-primary">Forest Cover</span>
+                                <span class="text-sm font-medium text-text-primary">35.7%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="bg-green-500 h-full transition-all" style="width: 35.7%"></div>
+                            </div>
+                            <div class="text-xs text-text-secondary mt-1">Confidence: 89.7%</div>
+                        </div>
+
+                        <!-- Water Bodies -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-text-primary">Water Bodies</span>
+                                <span class="text-sm font-medium text-text-primary">12.8%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="bg-blue-500 h-full transition-all" style="width: 12.8%"></div>
+                            </div>
+                            <div class="text-xs text-text-secondary mt-1">Confidence: 96.8%</div>
+                        </div>
+
+                        <!-- Homesteads -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-text-primary">Homesteads</span>
+                                <span class="text-sm font-medium text-text-primary">6.4%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="bg-orange-500 h-full transition-all" style="width: 6.4%"></div>
+                            </div>
+                            <div class="text-xs text-text-secondary mt-1">Confidence: 87.3%</div>
+                        </div>
+
+                        <!-- Unclassified -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm text-text-primary">Unclassified</span>
+                                <span class="text-sm font-medium text-text-primary">2.8%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="bg-gray-400 h-full transition-all" style="width: 2.8%"></div>
+                            </div>
+                            <div class="text-xs text-text-secondary mt-1">Low confidence areas</div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Accuracy -->
+                    <div class="mt-4 p-3 bg-secondary-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-text-primary">Overall Accuracy</span>
+                            <span class="text-lg font-semibold text-secondary-600">91.7%</span>
+                        </div>
+                        <div class="text-xs text-text-secondary mt-1">Based on validation dataset</div>
+                    </div>
+                </div>
+
+                <!-- FRA Claims Integration -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-map-marked-alt text-primary-600"></i>
+                        FRA Claims Validation
+                    </h2>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-2 bg-secondary-50 rounded">
+                            <span class="text-sm text-text-primary">Claims Matched</span>
+                            <span class="text-sm font-medium text-secondary-600">847 / 923</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-accent-50 rounded">
+                            <span class="text-sm text-text-primary">Discrepancies Found</span>
+                            <span class="text-sm font-medium text-accent-600">76</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-primary-50 rounded">
+                            <span class="text-sm text-text-primary">Validation Accuracy</span>
+                            <span class="text-sm font-medium text-primary-600">91.8%</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary w-full mt-4 flex items-center justify-center gap-2">
+                        <i class="fas fa-eye"></i>
+                        View Discrepancies
+                    </button>
+                </div>
+
+                <!-- Boundary Selector -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+                        <i class="fas fa-border-all text-primary-600"></i>
+                        Boundary Layer
+                    </h2>
+                    <div class="space-y-2 text-sm" id="boundarySelector">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="boundaryType" value="village" />
+                            <span>Village Boundaries</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="boundaryType" value="district" checked />
+                            <span>District Boundaries</span>
+                        </label>
+                    </div>
+                    <div id="districtStatus" class="text-xs text-text-secondary mt-3">Loading…</div>
+                </div>
+
+                <!-- Add Custom Layer -->
+                
+
+                <!-- Export Options -->
+                <div class="floating-panel p-4">
+                    <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <i class="fas fa-download text-primary-600"></i>
+                        Export Results
+                    </h2>
+
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors flex items-center gap-2">
+                            <i class="fas fa-file-csv text-secondary-600"></i>
+                            <span class="text-sm">Classification Data (CSV)</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors flex items-center gap-2">
+                            <i class="fas fa-map text-primary-600"></i>
+                            <span class="text-sm">GeoTIFF with Classifications</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors flex items-center gap-2">
+                            <i class="fas fa-file-pdf text-accent-600"></i>
+                            <span class="text-sm">Analysis Report (PDF)</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded transition-colors flex items-center gap-2">
+                            <i class="fas fa-code text-text-secondary"></i>
+                            <span class="text-sm">Shapefile Package</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Complete Modal -->
+    <div id="processingCompleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-2xl text-secondary-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-primary mb-2">Analysis Complete!</h3>
+                <p class="text-text-secondary mb-4">Satellite imagery has been successfully processed and classified.</p>
+                <div class="flex gap-3">
+                    <button id="closeModal" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        Close
+                    </button>
+                    <button class="flex-1 btn-primary">
+                        View Results
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Confidence threshold slider
+        const confidenceSlider = document.getElementById('confidenceSlider');
+        const confidenceValue = document.getElementById('confidenceValue');
+        
+        confidenceSlider.addEventListener('input', function() {
+            confidenceValue.textContent = this.value + '%';
+        });
+
+        // File upload handling
+        const uploadArea = document.querySelector('.border-dashed');
+        const fileInput = document.querySelector('input[type="file"]');
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-primary-300', 'bg-primary-50');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-primary-300', 'bg-primary-50');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-primary-300', 'bg-primary-50');
+            // Handle file drop
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+        
+        function handleFileUpload(file) {
+            console.log('Uploading file:', file.name);
+            // Simulate file upload
+            alert(`Uploading ${file.name}...`);
+        }
+
+        // Start processing
+        document.getElementById('startProcessing').addEventListener('click', function() {
+            const processingStatus = document.getElementById('processingStatus');
+            processingStatus.classList.remove('hidden');
+            
+            // Simulate processing
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        processingStatus.classList.add('hidden');
+                        document.getElementById('processingCompleteModal').classList.remove('hidden');
+                    }, 500);
+                }
+                
+                const progressBar = processingStatus.querySelector('.bg-primary-600');
+                const progressText = processingStatus.querySelector('.text-text-secondary');
+                progressBar.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+            }, 200);
+        });
+
+        // Close modal
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('processingCompleteModal').classList.add('hidden');
+        });
+
+        // Viewer controls
+        document.querySelectorAll('.absolute.top-4 button').forEach(button => {
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('fa-plus')) {
+                    console.log('Zoom in');
+                } else if (icon.classList.contains('fa-minus')) {
+                    console.log('Zoom out');
+                } else if (icon.classList.contains('fa-expand')) {
+                    console.log('Fit to screen');
+                } else if (icon.classList.contains('fa-vector-square')) {
+                    console.log('Rectangle selection');
+                    this.classList.toggle('bg-primary-600');
+                    this.classList.toggle('bg-white');
+                } else if (icon.classList.contains('fa-circle')) {
+                    console.log('Circle selection');
+                } else if (icon.classList.contains('fa-draw-polygon')) {
+                    console.log('Polygon selection');
+                }
+            });
+        });
+
+        // Export buttons
+        document.querySelectorAll('.floating-panel:last-child button').forEach(button => {
+            button.addEventListener('click', function() {
+                const text = this.querySelector('span').textContent;
+                alert(`Exporting ${text}...`);
+            });
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AI Asset Mapping interface loaded');
+            
+            // Check for user authentication
+            const user = localStorage.getItem('fraUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Update user info if needed
+            const userData = JSON.parse(user);
+            console.log('User:', userData.email, 'Role:', userData.role);
+        });
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
+    <script>
+        // Initialize Leaflet map
+        document.addEventListener('DOMContentLoaded', function() {
+            const map = L.map('map', { zoomControl: true });
+            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Focus on Odisha, India by default
+            map.setView([20.9517, 85.0985], 7);
+
+            // Base and overlay layers
+            const baseLayers = { 'OpenStreetMap': osm };
+            const overlayLayers = {};
+
+            // Create explicit panes to control z-index ordering and avoid overlap
+            map.createPane('boundaryPane');
+            map.getPane('boundaryPane').style.zIndex = 350;
+            map.createPane('assetPane');
+            map.getPane('assetPane').style.zIndex = 450;
+
+            // DSS popup renderer
+            function createDssPopup(options) {
+                const title = options.title || 'Asset';
+                const subtitle = options.subtitle || '';
+                const tags = options.tags || [];
+                const suggestions = options.suggestions || [];
+                const priority = options.priority || { label: 'Priority', score: 70, tone: 'secondary' };
+                const actions = options.actions || [
+                    { label: 'View details', style: 'bg-primary-600 text-white hover:bg-primary-700' },
+                    { label: 'Download PDF', style: 'border border-border-light text-text-secondary hover:bg-gray-50' }
+                ];
+
+                const toneColor = priority.tone === 'accent' ? 'text-accent-600' : priority.tone === 'secondary' ? 'text-secondary-600' : 'text-primary-600';
+                const barColor = priority.tone === 'accent' ? 'bg-accent-500' : priority.tone === 'secondary' ? 'bg-secondary-500' : 'bg-primary-600';
+                const safeScore = Math.max(0, Math.min(100, Number(priority.score || 0)));
+
+                return (
+                    '<div class="text-[13px] leading-snug">'
+                    +   '<div class="mb-2">'
+                    +       '<div class="flex items-start justify-between gap-2">'
+                    +           '<div>'
+                    +               '<div class="font-semibold text-text-primary">' + title + '</div>'
+                    +               (subtitle ? '<div class="text-[12px] text-text-secondary">' + subtitle + '</div>' : '')
+                    +           '</div>'
+                    +           (tags.length ? '<div class="flex flex-wrap gap-1">' + tags.map(t => '<span class="px-2 py-0.5 rounded-full text-[10px] bg-gray-100 text-text-secondary border border-gray-200">' + t + '</span>').join('') + '</div>' : '')
+                    +       '</div>'
+                    +   '</div>'
+                    +   '<div class="mb-2 p-2 bg-background rounded border border-border-light">'
+                    +       '<div class="flex items-center justify-between mb-1">'
+                    +           '<span class="text-[12px] text-text-secondary">' + (priority.label || 'Priority') + '</span>'
+                    +           '<span class="text-[12px] font-medium ' + toneColor + '">' + safeScore + '%</span>'
+                    +       '</div>'
+                    +       '<div class="h-1.5 w-full bg-gray-200 rounded">'
+                    +           '<div class="h-1.5 ' + barColor + ' rounded" style="width: ' + safeScore + '%"></div>'
+                    +       '</div>'
+                    +   '</div>'
+                    +   (suggestions.length ? '<div class="mb-3">'
+                    +       '<div class="text-[12px] font-medium text-text-primary mb-1">DSS suggestions</div>'
+                    +       '<ul class="list-disc pl-4 space-y-1">' + suggestions.map(s => '<li>' + s + '</li>').join('') + '</ul>'
+                    +   '</div>' : '')
+                    +   '<div class="grid grid-cols-2 gap-2">'
+                    +       actions.map(a => '<button class="px-2 py-1 rounded ' + a.style + '">' + a.label + '</button>').join('')
+                    +   '</div>'
+                    + '</div>'
+                );
+            }
+
+            // Sample polygons for Odisha assets (forest, water, homesteads)
+            // Forest Cover (e.g., Similipal, Satkosia, Kandhamal regions)
+            const forestPolys = [
+                L.polygon([[21.62, 86.25], [21.70, 86.35], [21.58, 86.45], [21.52, 86.30]], { pane: 'assetPane', color: '#22c55e', weight: 2, fillColor: '#22c55e', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Similipal (sample)',
+                        subtitle: 'Odisha • Forest use',
+                        tags: ['FRA', 'NTFP', 'CAMPA'],
+                        suggestions: [
+                            'Link eligible FRA holders to DAJGUA',
+                            'Promote community forestry and NTFP value chains',
+                            'Soil moisture conservation (MNREGA)'
+                        ],
+                        priority: { label: 'Priority', score: 76, tone: 'secondary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[20.58, 84.78], [20.66, 84.90], [20.55, 84.98], [20.48, 84.85]], { pane: 'assetPane', color: '#22c55e', weight: 2, fillColor: '#22c55e', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Satkosia (sample)',
+                        subtitle: 'Odisha • Forest restoration',
+                        tags: ['CAMPA', 'Afforestation'],
+                        suggestions: [
+                            'Afforestation support for degraded patches',
+                            'Eco-restoration funded via CAMPA',
+                            'Fire line maintenance before summer'
+                        ],
+                        priority: { label: 'Priority', score: 64, tone: 'secondary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[20.28, 84.06], [20.36, 84.18], [20.25, 84.26], [20.18, 84.14]], { pane: 'assetPane', color: '#22c55e', weight: 2, fillColor: '#22c55e', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Kandhamal (sample)',
+                        subtitle: 'Odisha • Forest-agri interface',
+                        tags: ['FRA', 'Agroforestry'],
+                        suggestions: [
+                            'FRA title convergence with DAJGUA',
+                            'Agroforestry on fringes (CSS Agroforestry)',
+                            'Micro check-dams for slope runoff'
+                        ],
+                        priority: { label: 'Priority', score: 71, tone: 'secondary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                )
+            ];
+            const forestGroup = L.featureGroup(forestPolys).addTo(map);
+            overlayLayers['Forest Cover (samples)'] = forestGroup;
+
+            // Water Bodies (e.g., Chilika Lake, Mahanadi delta, Hirakud vicinity)
+            const waterPolys = [
+                L.polygon([[19.78, 85.38], [19.86, 85.50], [19.74, 85.60], [19.66, 85.46]], { pane: 'assetPane', color: '#60a5fa', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Chilika (sample)',
+                        subtitle: 'Odisha • Wetland',
+                        tags: ['Fisheries', 'Wetlands'],
+                        suggestions: [
+                            'Promote fisheries and wetland livelihoods',
+                            'Converge with Jal Shakti for recharge pits',
+                            'Desilt feeder channels pre-monsoon'
+                        ],
+                        priority: { label: 'Priority', score: 68, tone: 'primary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[20.58, 86.88], [20.66, 87.00], [20.54, 87.08], [20.46, 86.95]], { pane: 'assetPane', color: '#60a5fa', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Mahanadi delta (sample)',
+                        subtitle: 'Odisha • Deltaic system',
+                        tags: ['Flood', 'Irrigation'],
+                        suggestions: [
+                            'Flood-resilience works (embankment repairs)',
+                            'Canal lining where seepage high',
+                            'Monitor water index for rabi planning'
+                        ],
+                        priority: { label: 'Priority', score: 62, tone: 'primary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[21.58, 83.80], [21.66, 83.92], [21.54, 84.00], [21.46, 83.88]], { pane: 'assetPane', color: '#60a5fa', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Hirakud vicinity (sample)',
+                        subtitle: 'Odisha • Reservoir periphery',
+                        tags: ['Lift Irrigation', 'Logistics'],
+                        suggestions: [
+                            'Lift irrigation for adjacent villages',
+                            'Check illegal sand mining hotspots',
+                            'Converge PM Gati Shakti for canal logistics'
+                        ],
+                        priority: { label: 'Priority', score: 74, tone: 'primary' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                )
+            ];
+            const waterGroup = L.featureGroup(waterPolys).addTo(map);
+            overlayLayers['Water Bodies (samples)'] = waterGroup;
+
+            // Homesteads clusters (around Bhubaneswar-Cuttack-Khurda belt, Sambalpur, Berhampur)
+            const homesteadPolys = [
+                L.polygon([[20.28, 85.76], [20.34, 85.88], [20.23, 85.95], [20.17, 85.82]], { pane: 'assetPane', color: '#fb923c', weight: 2, fillColor: '#fb923c', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Homesteads - Bhubaneswar belt (sample)',
+                        subtitle: 'Odisha • Settlements',
+                        tags: ['PMAY-G', 'JJM', 'Solar'],
+                        suggestions: [
+                            'PMAY-G convergence for housing upgrades',
+                            'Piped water via Jal Jeevan Mission',
+                            'Household solar under Rooftop Solar scheme'
+                        ],
+                        priority: { label: 'Priority', score: 61, tone: 'accent' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[21.38, 83.90], [21.44, 84.02], [21.33, 84.10], [21.27, 83.98]], { pane: 'assetPane', color: '#fb923c', weight: 2, fillColor: '#fb923c', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Homesteads - Sambalpur (sample)',
+                        subtitle: 'Odisha • Settlements',
+                        tags: ['JJM', 'SBM', 'DDU-GKY'],
+                        suggestions: [
+                            'Household tap connections (JJM)',
+                            'Sanitation coverage under SBM',
+                            'Skill training under DDU-GKY'
+                        ],
+                        priority: { label: 'Priority', score: 58, tone: 'accent' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                ),
+                L.polygon([[19.23, 84.70], [19.29, 84.82], [19.18, 84.90], [19.12, 84.78]], { pane: 'assetPane', color: '#fb923c', weight: 2, fillColor: '#fb923c', fillOpacity: 0.35 }).bindPopup(
+                    createDssPopup({
+                        title: 'Homesteads - Berhampur (sample)',
+                        subtitle: 'Odisha • Settlements',
+                        tags: ['DAJGUA', 'RDSS'],
+                        suggestions: [
+                            'Homestead plot development (DAJGUA add-ons)',
+                            'Cyclone-resilient housing retrofits',
+                            'Street-lighting via RDSS'
+                        ],
+                        priority: { label: 'Priority', score: 66, tone: 'accent' }
+                    }), { maxWidth: 360, className: 'dss-popup' }
+                )
+            ];
+            const homesteadGroup = L.featureGroup(homesteadPolys).addTo(map);
+            overlayLayers['Homesteads (samples)'] = homesteadGroup;
+
+            // Additional 30 smaller sample polygons across Odisha
+            const additionalPolys = [
+                // Forest Cover - Northern Odisha
+                L.polygon([[21.15, 85.20], [21.20, 85.25], [21.18, 85.30], [21.13, 85.28]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Mayurbhanj',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'NTFP'],
+                        suggestions: ['FRA title verification', 'NTFP value chain development'],
+                        priority: { label: 'Medium', score: 45, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.95, 85.45], [21.00, 85.50], [20.98, 85.55], [20.93, 85.52]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Keonjhar',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['Mining', 'Conservation'],
+                        suggestions: ['Mining impact assessment', 'Conservation planning'],
+                        priority: { label: 'Medium', score: 52, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[21.35, 86.10], [21.40, 86.15], [21.38, 86.20], [21.33, 86.18]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Balasore',
+                        subtitle: 'Odisha • Coastal forest',
+                        tags: ['Coastal', 'Mangrove'],
+                        suggestions: ['Mangrove restoration', 'Coastal protection'],
+                        priority: { label: 'High', score: 68, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Water Bodies - Central Odisha
+                L.polygon([[20.15, 85.25], [20.20, 85.30], [20.18, 85.35], [20.13, 85.32]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Cuttack',
+                        subtitle: 'Odisha • Urban water',
+                        tags: ['Urban', 'Water Supply'],
+                        suggestions: ['Water quality monitoring', 'Urban water management'],
+                        priority: { label: 'High', score: 75, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.45, 84.15], [20.50, 84.20], [20.48, 84.25], [20.43, 84.22]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Phulbani',
+                        subtitle: 'Odisha • Rural water',
+                        tags: ['Rural', 'Irrigation'],
+                        suggestions: ['Irrigation development', 'Water conservation'],
+                        priority: { label: 'Medium', score: 58, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.85, 84.95], [19.90, 85.00], [19.88, 85.05], [19.83, 85.02]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Ganjam',
+                        subtitle: 'Odisha • Coastal water',
+                        tags: ['Coastal', 'Fisheries'],
+                        suggestions: ['Fisheries development', 'Coastal management'],
+                        priority: { label: 'High', score: 72, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Homesteads - Western Odisha
+                L.polygon([[21.25, 83.45], [21.30, 83.50], [21.28, 83.55], [21.23, 83.52]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Sundargarh',
+                        subtitle: 'Odisha • Industrial area',
+                        tags: ['Industrial', 'Employment'],
+                        suggestions: ['Skill development', 'Industrial employment'],
+                        priority: { label: 'Medium', score: 55, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.75, 84.35], [20.80, 84.40], [20.78, 84.45], [20.73, 84.42]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Deogarh',
+                        subtitle: 'Odisha • Rural settlement',
+                        tags: ['Rural', 'Development'],
+                        suggestions: ['Rural infrastructure', 'Basic amenities'],
+                        priority: { label: 'Medium', score: 48, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[21.05, 85.85], [21.10, 85.90], [21.08, 85.95], [21.03, 85.92]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Bhadrak',
+                        subtitle: 'Odisha • Agricultural area',
+                        tags: ['Agriculture', 'Rural'],
+                        suggestions: ['Agricultural development', 'Rural connectivity'],
+                        priority: { label: 'Medium', score: 51, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Agricultural Land - Various locations
+                L.polygon([[20.35, 85.65], [20.40, 85.70], [20.38, 85.75], [20.33, 85.72]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Jajpur',
+                        subtitle: 'Odisha • Rice cultivation',
+                        tags: ['Rice', 'PM-KISAN'],
+                        suggestions: ['PM-KISAN enrollment', 'Rice productivity'],
+                        priority: { label: 'High', score: 78, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.95, 84.45], [20.00, 84.50], [19.98, 84.55], [19.93, 84.52]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Rayagada',
+                        subtitle: 'Odisha • Tribal agriculture',
+                        tags: ['Tribal', 'Organic'],
+                        suggestions: ['Organic farming promotion', 'Tribal development'],
+                        priority: { label: 'High', score: 82, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.55, 85.15], [20.60, 85.20], [20.58, 85.25], [20.53, 85.22]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Dhenkanal',
+                        subtitle: 'Odisha • Mixed farming',
+                        tags: ['Mixed', 'Livestock'],
+                        suggestions: ['Mixed farming support', 'Livestock development'],
+                        priority: { label: 'Medium', score: 65, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Forest Cover - Southern Odisha
+                L.polygon([[19.45, 84.25], [19.50, 84.30], [19.48, 84.35], [19.43, 84.32]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Koraput',
+                        subtitle: 'Odisha • Tribal forest',
+                        tags: ['Tribal', 'FRA'],
+                        suggestions: ['FRA implementation', 'Tribal rights'],
+                        priority: { label: 'High', score: 85, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.75, 83.85], [19.80, 83.90], [19.78, 83.95], [19.73, 83.92]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Malkangiri',
+                        subtitle: 'Odisha • Border forest',
+                        tags: ['Border', 'Security'],
+                        suggestions: ['Border security', 'Forest protection'],
+                        priority: { label: 'High', score: 88, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.05, 85.95], [20.10, 86.00], [20.08, 86.05], [20.03, 86.02]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Puri',
+                        subtitle: 'Odisha • Coastal forest',
+                        tags: ['Coastal', 'Tourism'],
+                        suggestions: ['Eco-tourism development', 'Coastal protection'],
+                        priority: { label: 'Medium', score: 62, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Water Bodies - Eastern Odisha
+                L.polygon([[21.45, 86.35], [21.50, 86.40], [21.48, 86.45], [21.43, 86.42]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Baleshwar',
+                        subtitle: 'Odisha • River system',
+                        tags: ['River', 'Flood'],
+                        suggestions: ['Flood management', 'River conservation'],
+                        priority: { label: 'High', score: 79, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.25, 86.15], [20.30, 86.20], [20.28, 86.25], [20.23, 86.22]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Kendrapara',
+                        subtitle: 'Odisha • Delta region',
+                        tags: ['Delta', 'Biodiversity'],
+                        suggestions: ['Biodiversity conservation', 'Delta management'],
+                        priority: { label: 'High', score: 76, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.65, 85.55], [19.70, 85.60], [19.68, 85.65], [19.63, 85.62]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Gajapati',
+                        subtitle: 'Odisha • Hill water',
+                        tags: ['Hill', 'Spring'],
+                        suggestions: ['Spring development', 'Hill water management'],
+                        priority: { label: 'Medium', score: 59, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Homesteads - Central Odisha
+                L.polygon([[20.65, 84.75], [20.70, 84.80], [20.68, 84.85], [20.63, 84.82]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Angul',
+                        subtitle: 'Odisha • Industrial hub',
+                        tags: ['Industrial', 'Power'],
+                        suggestions: ['Industrial development', 'Power sector'],
+                        priority: { label: 'High', score: 71, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.85, 85.35], [20.90, 85.40], [20.88, 85.45], [20.83, 85.42]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Nayagarh',
+                        subtitle: 'Odisha • Rural development',
+                        tags: ['Rural', 'Education'],
+                        suggestions: ['Rural education', 'Skill development'],
+                        priority: { label: 'Medium', score: 54, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.35, 85.15], [19.40, 85.20], [19.38, 85.25], [19.33, 85.22]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Ganjam',
+                        subtitle: 'Odisha • Coastal settlement',
+                        tags: ['Coastal', 'Tourism'],
+                        suggestions: ['Coastal tourism', 'Marine development'],
+                        priority: { label: 'Medium', score: 57, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Agricultural Land - Northern Odisha
+                L.polygon([[21.55, 86.55], [21.60, 86.60], [21.58, 86.65], [21.53, 86.62]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Balasore',
+                        subtitle: 'Odisha • Rice belt',
+                        tags: ['Rice', 'Export'],
+                        suggestions: ['Rice export promotion', 'Quality improvement'],
+                        priority: { label: 'High', score: 81, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.95, 84.25], [21.00, 84.30], [20.98, 84.35], [20.93, 84.32]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Sambalpur',
+                        subtitle: 'Odisha • Cotton belt',
+                        tags: ['Cotton', 'Textile'],
+                        suggestions: ['Cotton development', 'Textile industry'],
+                        priority: { label: 'Medium', score: 67, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.85, 84.15], [19.90, 84.20], [19.88, 84.25], [19.83, 84.22]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Nabarangpur',
+                        subtitle: 'Odisha • Tribal agriculture',
+                        tags: ['Tribal', 'Subsistence'],
+                        suggestions: ['Subsistence farming support', 'Tribal welfare'],
+                        priority: { label: 'High', score: 89, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Forest Cover - Central Odisha
+                L.polygon([[20.15, 84.55], [20.20, 84.60], [20.18, 84.65], [20.13, 84.62]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Boudh',
+                        subtitle: 'Odisha • Mixed forest',
+                        tags: ['Mixed', 'Biodiversity'],
+                        suggestions: ['Biodiversity conservation', 'Eco-tourism'],
+                        priority: { label: 'Medium', score: 63, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[21.25, 85.75], [21.30, 85.80], [21.28, 85.85], [21.23, 85.82]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Jajpur',
+                        subtitle: 'Odisha • Industrial forest',
+                        tags: ['Industrial', 'Pollution'],
+                        suggestions: ['Pollution monitoring', 'Industrial impact'],
+                        priority: { label: 'High', score: 74, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.55, 85.75], [19.60, 85.80], [19.58, 85.85], [19.53, 85.82]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Patch - Khurda',
+                        subtitle: 'Odisha • Urban forest',
+                        tags: ['Urban', 'Recreation'],
+                        suggestions: ['Urban forestry', 'Recreation development'],
+                        priority: { label: 'Medium', score: 56, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Water Bodies - Western Odisha
+                L.polygon([[21.75, 83.25], [21.80, 83.30], [21.78, 83.35], [21.73, 83.32]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Sundargarh',
+                        subtitle: 'Odisha • Mining area water',
+                        tags: ['Mining', 'Pollution'],
+                        suggestions: ['Water quality monitoring', 'Mining impact'],
+                        priority: { label: 'High', score: 77, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.35, 83.65], [20.40, 83.70], [20.38, 83.75], [20.33, 83.72]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Jharsuguda',
+                        subtitle: 'Odisha • Industrial water',
+                        tags: ['Industrial', 'Cooling'],
+                        suggestions: ['Industrial water management', 'Cooling systems'],
+                        priority: { label: 'High', score: 73, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.15, 84.35], [19.20, 84.40], [19.18, 84.45], [19.13, 84.42]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Nabarangpur',
+                        subtitle: 'Odisha • Tribal water',
+                        tags: ['Tribal', 'Drinking'],
+                        suggestions: ['Drinking water supply', 'Tribal development'],
+                        priority: { label: 'High', score: 86, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Homesteads - Southern Odisha
+                L.polygon([[19.25, 83.45], [19.30, 83.50], [19.28, 83.55], [19.23, 83.52]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Malkangiri',
+                        subtitle: 'Odisha • Border settlement',
+                        tags: ['Border', 'Security'],
+                        suggestions: ['Border security', 'Infrastructure development'],
+                        priority: { label: 'High', score: 91, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.65, 84.05], [19.70, 84.10], [19.68, 84.15], [19.63, 84.12]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Koraput',
+                        subtitle: 'Odisha • Tribal settlement',
+                        tags: ['Tribal', 'Development'],
+                        suggestions: ['Tribal development', 'Basic amenities'],
+                        priority: { label: 'High', score: 87, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[20.45, 85.45], [20.50, 85.50], [20.48, 85.55], [20.43, 85.52]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Cuttack',
+                        subtitle: 'Odisha • Urban settlement',
+                        tags: ['Urban', 'Smart City'],
+                        suggestions: ['Smart city development', 'Urban planning'],
+                        priority: { label: 'High', score: 69, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Additional polygons near Kalahandi and Jagdalpur (Bastar region)
+                // Kalahandi region - Forest Cover
+                L.polygon([[19.85, 83.25], [19.90, 83.30], [19.88, 83.35], [19.83, 83.32]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Kalahandi',
+                        subtitle: 'Odisha • Dense forest',
+                        tags: ['FRA', 'Tribal', 'NTFP'],
+                        suggestions: ['FRA title verification', 'Tribal rights protection', 'NTFP value chain'],
+                        priority: { label: 'High', score: 92, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.75, 83.15], [19.80, 83.20], [19.78, 83.25], [19.73, 83.22]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Kalahandi West',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'Conservation'],
+                        suggestions: ['Forest conservation', 'FRA implementation'],
+                        priority: { label: 'High', score: 88, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.95, 83.35], [20.00, 83.40], [19.98, 83.45], [19.93, 83.42]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Kalahandi East',
+                        subtitle: 'Odisha • Mixed forest',
+                        tags: ['Mixed', 'Biodiversity'],
+                        suggestions: ['Biodiversity conservation', 'Eco-tourism'],
+                        priority: { label: 'Medium', score: 71, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Kalahandi region - Water Bodies
+                L.polygon([[19.65, 83.45], [19.70, 83.50], [19.68, 83.55], [19.63, 83.52]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Kalahandi',
+                        subtitle: 'Odisha • Rural water',
+                        tags: ['Rural', 'Irrigation'],
+                        suggestions: ['Irrigation development', 'Water conservation'],
+                        priority: { label: 'High', score: 85, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.55, 83.55], [19.60, 83.60], [19.58, 83.65], [19.53, 83.62]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Kalahandi South',
+                        subtitle: 'Odisha • Stream system',
+                        tags: ['Stream', 'Tribal'],
+                        suggestions: ['Tribal water access', 'Stream conservation'],
+                        priority: { label: 'High', score: 89, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Kalahandi region - Agricultural Land
+                L.polygon([[19.85, 83.45], [19.90, 83.50], [19.88, 83.55], [19.83, 83.52]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Kalahandi',
+                        subtitle: 'Odisha • Tribal agriculture',
+                        tags: ['Tribal', 'Subsistence'],
+                        suggestions: ['Subsistence farming support', 'Tribal welfare schemes'],
+                        priority: { label: 'High', score: 94, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.75, 83.35], [19.80, 83.40], [19.78, 83.45], [19.73, 83.42]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Kalahandi Central',
+                        subtitle: 'Odisha • Mixed farming',
+                        tags: ['Mixed', 'Livestock'],
+                        suggestions: ['Mixed farming support', 'Livestock development'],
+                        priority: { label: 'High', score: 87, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Kalahandi region - Settlements
+                L.polygon([[19.65, 83.25], [19.70, 83.30], [19.68, 83.35], [19.63, 83.32]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Kalahandi',
+                        subtitle: 'Odisha • Tribal settlement',
+                        tags: ['Tribal', 'Development'],
+                        suggestions: ['Tribal development', 'Basic amenities'],
+                        priority: { label: 'High', score: 93, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Jagdalpur (Bastar) region - Forest Cover
+                L.polygon([[19.15, 81.95], [19.20, 82.00], [19.18, 82.05], [19.13, 82.02]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Jagdalpur',
+                        subtitle: 'Chhattisgarh • Dense forest',
+                        tags: ['FRA', 'Tribal', 'Conservation'],
+                        suggestions: ['FRA implementation', 'Tribal rights', 'Forest conservation'],
+                        priority: { label: 'High', score: 95, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.05, 81.85], [19.10, 81.90], [19.08, 81.95], [19.03, 81.92]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Bastar West',
+                        subtitle: 'Chhattisgarh • Forest fragment',
+                        tags: ['FRA', 'NTFP'],
+                        suggestions: ['FRA title verification', 'NTFP value chain'],
+                        priority: { label: 'High', score: 91, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.25, 82.05], [19.30, 82.10], [19.28, 82.15], [19.23, 82.12]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Bastar East',
+                        subtitle: 'Chhattisgarh • Mixed forest',
+                        tags: ['Mixed', 'Biodiversity'],
+                        suggestions: ['Biodiversity conservation', 'Eco-tourism'],
+                        priority: { label: 'Medium', score: 76, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Jagdalpur region - Water Bodies
+                L.polygon([[19.15, 82.15], [19.20, 82.20], [19.18, 82.25], [19.13, 82.22]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Jagdalpur',
+                        subtitle: 'Chhattisgarh • Urban water',
+                        tags: ['Urban', 'Water Supply'],
+                        suggestions: ['Urban water management', 'Water quality monitoring'],
+                        priority: { label: 'High', score: 82, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.05, 82.25], [19.10, 82.30], [19.08, 82.35], [19.03, 82.32]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Bastar South',
+                        subtitle: 'Chhattisgarh • Rural water',
+                        tags: ['Rural', 'Tribal'],
+                        suggestions: ['Tribal water access', 'Rural water supply'],
+                        priority: { label: 'High', score: 88, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Jagdalpur region - Agricultural Land
+                L.polygon([[19.25, 82.35], [19.30, 82.40], [19.28, 82.45], [19.23, 82.42]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Jagdalpur',
+                        subtitle: 'Chhattisgarh • Tribal agriculture',
+                        tags: ['Tribal', 'Organic'],
+                        suggestions: ['Organic farming promotion', 'Tribal development'],
+                        priority: { label: 'High', score: 90, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.15, 82.45], [19.20, 82.50], [19.18, 82.55], [19.13, 82.52]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Bastar Central',
+                        subtitle: 'Chhattisgarh • Mixed farming',
+                        tags: ['Mixed', 'Livestock'],
+                        suggestions: ['Mixed farming support', 'Livestock development'],
+                        priority: { label: 'High', score: 86, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Jagdalpur region - Settlements
+                L.polygon([[19.35, 82.15], [19.40, 82.20], [19.38, 82.25], [19.33, 82.22]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Jagdalpur',
+                        subtitle: 'Chhattisgarh • District HQ',
+                        tags: ['District', 'Development'],
+                        suggestions: ['District development', 'Infrastructure'],
+                        priority: { label: 'High', score: 84, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.25, 82.05], [19.30, 82.10], [19.28, 82.15], [19.23, 82.12]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Bastar Rural',
+                        subtitle: 'Chhattisgarh • Tribal settlement',
+                        tags: ['Tribal', 'Rural'],
+                        suggestions: ['Tribal development', 'Rural infrastructure'],
+                        priority: { label: 'High', score: 92, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Additional polygons in Lower/Southern Odisha region
+                // Ganjam region - Forest Cover
+                L.polygon([[19.35, 84.85], [19.40, 84.90], [19.38, 84.95], [19.33, 84.92]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Ganjam',
+                        subtitle: 'Odisha • Coastal forest',
+                        tags: ['Coastal', 'Mangrove'],
+                        suggestions: ['Mangrove restoration', 'Coastal protection'],
+                        priority: { label: 'High', score: 78, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.25, 84.75], [19.30, 84.80], [19.28, 84.85], [19.23, 84.82]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Ganjam West',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'Conservation'],
+                        suggestions: ['Forest conservation', 'FRA implementation'],
+                        priority: { label: 'Medium', score: 65, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Ganjam region - Water Bodies
+                L.polygon([[19.45, 85.05], [19.50, 85.10], [19.48, 85.15], [19.43, 85.12]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Ganjam',
+                        subtitle: 'Odisha • Coastal water',
+                        tags: ['Coastal', 'Fisheries'],
+                        suggestions: ['Fisheries development', 'Coastal management'],
+                        priority: { label: 'High', score: 81, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.35, 84.95], [19.40, 85.00], [19.38, 85.05], [19.33, 85.02]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Ganjam South',
+                        subtitle: 'Odisha • Estuary system',
+                        tags: ['Estuary', 'Biodiversity'],
+                        suggestions: ['Estuary conservation', 'Biodiversity protection'],
+                        priority: { label: 'High', score: 83, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Ganjam region - Agricultural Land
+                L.polygon([[19.55, 85.15], [19.60, 85.20], [19.58, 85.25], [19.53, 85.22]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Ganjam',
+                        subtitle: 'Odisha • Rice cultivation',
+                        tags: ['Rice', 'PM-KISAN'],
+                        suggestions: ['PM-KISAN enrollment', 'Rice productivity'],
+                        priority: { label: 'High', score: 79, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Ganjam region - Settlements
+                L.polygon([[19.65, 85.25], [19.70, 85.30], [19.68, 85.35], [19.63, 85.32]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Ganjam',
+                        subtitle: 'Odisha • Coastal settlement',
+                        tags: ['Coastal', 'Tourism'],
+                        suggestions: ['Coastal tourism', 'Marine development'],
+                        priority: { label: 'Medium', score: 68, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Gajapati region - Forest Cover
+                L.polygon([[19.15, 84.15], [19.20, 84.20], [19.18, 84.25], [19.13, 84.22]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Gajapati',
+                        subtitle: 'Odisha • Hill forest',
+                        tags: ['Hill', 'Tribal'],
+                        suggestions: ['Hill forest conservation', 'Tribal rights'],
+                        priority: { label: 'High', score: 86, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.05, 84.05], [19.10, 84.10], [19.08, 84.15], [19.03, 84.12]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Gajapati West',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'NTFP'],
+                        suggestions: ['FRA implementation', 'NTFP development'],
+                        priority: { label: 'High', score: 89, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Gajapati region - Water Bodies
+                L.polygon([[19.25, 84.35], [19.30, 84.40], [19.28, 84.45], [19.23, 84.42]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Gajapati',
+                        subtitle: 'Odisha • Hill water',
+                        tags: ['Hill', 'Spring'],
+                        suggestions: ['Spring development', 'Hill water management'],
+                        priority: { label: 'High', score: 84, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Gajapati region - Agricultural Land
+                L.polygon([[19.35, 84.45], [19.40, 84.50], [19.38, 84.55], [19.33, 84.52]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Gajapati',
+                        subtitle: 'Odisha • Hill agriculture',
+                        tags: ['Hill', 'Terrace'],
+                        suggestions: ['Terrace farming support', 'Hill agriculture'],
+                        priority: { label: 'High', score: 87, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Gajapati region - Settlements
+                L.polygon([[19.45, 84.55], [19.50, 84.60], [19.48, 84.65], [19.43, 84.62]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Gajapati',
+                        subtitle: 'Odisha • Hill settlement',
+                        tags: ['Hill', 'Tribal'],
+                        suggestions: ['Hill development', 'Tribal welfare'],
+                        priority: { label: 'High', score: 88, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Rayagada region - Forest Cover
+                L.polygon([[19.15, 83.15], [19.20, 83.20], [19.18, 83.25], [19.13, 83.22]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Rayagada',
+                        subtitle: 'Odisha • Dense forest',
+                        tags: ['FRA', 'Tribal', 'Conservation'],
+                        suggestions: ['FRA implementation', 'Tribal rights', 'Forest conservation'],
+                        priority: { label: 'High', score: 91, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[19.05, 83.05], [19.10, 83.10], [19.08, 83.15], [19.03, 83.12]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Rayagada West',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'NTFP'],
+                        suggestions: ['FRA title verification', 'NTFP value chain'],
+                        priority: { label: 'High', score: 88, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Rayagada region - Water Bodies
+                L.polygon([[19.25, 83.35], [19.30, 83.40], [19.28, 83.45], [19.23, 83.42]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Rayagada',
+                        subtitle: 'Odisha • River system',
+                        tags: ['River', 'Tribal'],
+                        suggestions: ['Tribal water access', 'River conservation'],
+                        priority: { label: 'High', score: 85, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Rayagada region - Agricultural Land
+                L.polygon([[19.35, 83.45], [19.40, 83.50], [19.38, 83.55], [19.33, 83.52]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Rayagada',
+                        subtitle: 'Odisha • Tribal agriculture',
+                        tags: ['Tribal', 'Organic'],
+                        suggestions: ['Organic farming promotion', 'Tribal development'],
+                        priority: { label: 'High', score: 90, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Rayagada region - Settlements
+                L.polygon([[19.45, 83.55], [19.50, 83.60], [19.48, 83.65], [19.43, 83.62]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Rayagada',
+                        subtitle: 'Odisha • Tribal settlement',
+                        tags: ['Tribal', 'Development'],
+                        suggestions: ['Tribal development', 'Basic amenities'],
+                        priority: { label: 'High', score: 89, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Malkangiri region - Forest Cover
+                L.polygon([[18.25, 81.85], [18.30, 81.90], [18.28, 81.95], [18.23, 81.92]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Malkangiri',
+                        subtitle: 'Odisha • Border forest',
+                        tags: ['Border', 'Security'],
+                        suggestions: ['Border security', 'Forest protection'],
+                        priority: { label: 'High', score: 93, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+                L.polygon([[18.15, 81.75], [18.20, 81.80], [18.18, 81.85], [18.13, 81.82]], { pane: 'assetPane', color: '#22c55e', weight: 1.5, fillColor: '#22c55e', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Forest Cover - Malkangiri West',
+                        subtitle: 'Odisha • Forest fragment',
+                        tags: ['FRA', 'Conservation'],
+                        suggestions: ['Forest conservation', 'FRA implementation'],
+                        priority: { label: 'High', score: 90, tone: 'secondary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Malkangiri region - Water Bodies
+                L.polygon([[18.35, 82.05], [18.40, 82.10], [18.38, 82.15], [18.33, 82.12]], { pane: 'assetPane', color: '#60a5fa', weight: 1.5, fillColor: '#60a5fa', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Water Body - Malkangiri',
+                        subtitle: 'Odisha • Border water',
+                        tags: ['Border', 'Tribal'],
+                        suggestions: ['Tribal water access', 'Border water management'],
+                        priority: { label: 'High', score: 92, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Malkangiri region - Agricultural Land
+                L.polygon([[18.45, 82.15], [18.50, 82.20], [18.48, 82.25], [18.43, 82.22]], { pane: 'assetPane', color: '#818cf8', weight: 1.5, fillColor: '#818cf8', fillOpacity: 0.25 }).bindPopup(
+                    createDssPopup({
+                        title: 'Agricultural Land - Malkangiri',
+                        subtitle: 'Odisha • Border agriculture',
+                        tags: ['Border', 'Tribal'],
+                        suggestions: ['Border agriculture support', 'Tribal welfare'],
+                        priority: { label: 'High', score: 94, tone: 'primary' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                ),
+
+                // Malkangiri region - Settlements
+                L.polygon([[18.55, 82.25], [18.60, 82.30], [18.58, 82.35], [18.53, 82.32]], { pane: 'assetPane', color: '#fb923c', weight: 1.5, fillColor: '#fb923c', fillOpacity: 0.30 }).bindPopup(
+                    createDssPopup({
+                        title: 'Settlement - Malkangiri',
+                        subtitle: 'Odisha • Border settlement',
+                        tags: ['Border', 'Security'],
+                        suggestions: ['Border security', 'Infrastructure development'],
+                        priority: { label: 'High', score: 95, tone: 'accent' }
+                    }), { maxWidth: 300, className: 'dss-popup' }
+                )
+            ];
+
+            const additionalGroup = L.featureGroup(additionalPolys).addTo(map);
+            overlayLayers['Additional Assets (66 samples)'] = additionalGroup;
+
+            // Optional: sample agricultural polygon retained for legend completeness
+            const agricultural = L.polygon([
+                [20.93, 85.05], [21.00, 85.15], [20.90, 85.22], [20.83, 85.12]
+            ], { pane: 'assetPane', color: '#818cf8', weight: 2, fillColor: '#818cf8', fillOpacity: 0.30 }).bindPopup(
+                createDssPopup({
+                    title: 'Agricultural Land (sample)',
+                    subtitle: 'Odisha • Cropland',
+                    tags: ['PM-KISAN', 'PMKSY'],
+                    suggestions: [
+                        'PM-KISAN enrollment verification',
+                        'Borewell where groundwater index is low',
+                        'Soil health cards; promote micro-irrigation (PMKSY)'
+                    ],
+                    priority: { label: 'Priority', score: 72, tone: 'primary' }
+                }), { maxWidth: 360, className: 'dss-popup' }
+            );
+            overlayLayers['Agricultural Land'] = agricultural.addTo(map);
+
+            // Fit to Odisha sample overlays
+            const group = L.featureGroup([forestGroup, waterGroup, homesteadGroup, additionalGroup, agricultural]);
+            try { map.fitBounds(group.getBounds().pad(0.20)); } catch (e) {}
+
+            // Drawing controls
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            const drawControl = new L.Control.Draw({
+                position: 'topright',
+                draw: {
+                    polyline: false,
+                    circlemarker: false,
+                    marker: false,
+                    rectangle: { shapeOptions: { color: '#0ea5e9' } },
+                    circle: false,
+                    polygon: { shapeOptions: { color: '#0ea5e9' } }
+                },
+                edit: { featureGroup: drawnItems, edit: true, remove: true }
+            });
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (e) {
+                drawnItems.addLayer(e.layer);
+            });
+
+            // Raise z-index order to avoid visual overlap confusion
+            agricultural.bringToFront();
+            forestGroup.bringToFront();
+            waterGroup.bringToFront();
+            homesteadGroup.bringToFront();
+            additionalGroup.bringToFront();
+
+            // District/Village boundaries preload handling
+            const districtStatus = document.getElementById('districtStatus');
+            let districtLayer = null;
+            let villageLayer = null;
+
+            function styleDistrict(feature) {
+                return {
+                    color: '#111827',
+                    weight: 1.5,
+                    fillColor: '#ffffff',
+                    fillOpacity: 0.05
+                };
+            }
+
+            function addDistrictGeoJSON(geojson) {
+                if (districtLayer) map.removeLayer(districtLayer);
+                districtLayer = L.geoJSON(geojson, { pane: 'boundaryPane', style: styleDistrict });
+                return districtLayer;
+            }
+
+            function addVillageGeoJSON(geojson) {
+                if (villageLayer) map.removeLayer(villageLayer);
+                villageLayer = L.geoJSON(geojson, {
+                    pane: 'boundaryPane',
+                    style: function() {
+                        return { color: '#0ea5e9', weight: 1, fillColor: '#38bdf8', fillOpacity: 0.08 };
+                    }
+                });
+                return villageLayer;
+            }
+
+            async function fetchText(path) {
+                const res = await fetch(path);
+                if (!res.ok) throw new Error('Failed to fetch ' + path);
+                return await res.text();
+            }
+
+            let layersControl = null;
+            function ensureLayersControl() {
+                if (!layersControl) {
+                    layersControl = L.control.layers(baseLayers, overlayLayers, { collapsed: false }).addTo(map);
+                }
+                return layersControl;
+            }
+
+            async function loadPreloadedBoundaries(defaultType = 'district') {
+                districtStatus.textContent = 'Loading odisha.kml and or1.geojson…';
+                try {
+                    // Load once and cache in layers
+                    if (!districtLayer) {
+                        const kmlText = await fetchText('../odisha.kml');
+                        const kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
+                        const odishaGeo = toGeoJSON.kml(kmlDom);
+                        districtLayer = addDistrictGeoJSON(odishaGeo);
+                        overlayLayers['District Boundaries'] = districtLayer;
+                    }
+                    if (!villageLayer) {
+                        // Try common filenames: geoson/gepjson (typos), geojson, json
+                        let villagesText;
+                        const candidates = [
+                            '../or1.geoson',
+                            '../or1.gepjson',
+                            '../or1.geojson',
+                            '../or1.json'
+                        ];
+                        let lastError = null;
+                        for (const path of candidates) {
+                            try { villagesText = await fetchText(path); districtStatus.textContent = 'Loaded ' + path.split('/').pop(); break; }
+                            catch (e) { lastError = e; }
+                        }
+                        if (!villagesText) throw lastError || new Error('Village file not found');
+                        const villagesGeo = JSON.parse(villagesText);
+                        villageLayer = addVillageGeoJSON(villagesGeo);
+                        overlayLayers['Village Boundaries'] = villageLayer;
+                    }
+
+                    // Add control if missing
+                    ensureLayersControl();
+
+                    // Show default selection
+                    if (defaultType === 'district') {
+                        if (map.hasLayer(villageLayer)) map.removeLayer(villageLayer);
+                        districtLayer.addTo(map);
+                        map.fitBounds(districtLayer.getBounds().pad(0.15));
+                    } else {
+                        if (map.hasLayer(districtLayer)) map.removeLayer(districtLayer);
+                        villageLayer.addTo(map);
+                        map.fitBounds(villageLayer.getBounds().pad(0.15));
+                    }
+                    districtStatus.textContent = 'Loaded. Use selector to switch layers.';
+                } catch (e) {
+                    console.error(e);
+                    districtStatus.textContent = 'Failed to load layers.';
+                }
+            }
+
+            // Radio toggle behavior
+            const selector = document.getElementById('boundarySelector');
+            selector.addEventListener('change', function(e) {
+                if (!districtLayer || !villageLayer) return;
+                const value = (e.target && e.target.value) || '';
+                if (value === 'district') {
+                    if (map.hasLayer(villageLayer)) map.removeLayer(villageLayer);
+                    districtLayer.addTo(map);
+                    try { map.fitBounds(districtLayer.getBounds().pad(0.15)); } catch (err) {}
+                } else if (value === 'village') {
+                    if (map.hasLayer(districtLayer)) map.removeLayer(districtLayer);
+                    villageLayer.addTo(map);
+                    try { map.fitBounds(villageLayer.getBounds().pad(0.15)); } catch (err) {}
+                }
+            });
+
+            // Initial load (default to district)
+            loadPreloadedBoundaries('district');
+
+            // Custom layer upload
+            const customInput = document.getElementById('customLayerFile');
+            const addBtn = document.getElementById('addCustomLayerBtn');
+            const customStatus = document.getElementById('customLayerStatus');
+            let customLayerCount = 0;
+
+            function styleCustom(feature) {
+                return { color: '#9333ea', weight: 2, fillColor: '#c084fc', fillOpacity: 0.15 };
+            }
+
+            addBtn.addEventListener('click', async function() {
+                const file = customInput && customInput.files && customInput.files[0];
+                if (!file) {
+                    customStatus.textContent = 'Please select a .kml or .geojson/.json file.';
+                    return;
+                }
+                customStatus.textContent = 'Reading ' + file.name + ' …';
+                try {
+                    const text = await file.text();
+                    let geojson;
+                    if (file.name.toLowerCase().endsWith('.kml')) {
+                        const dom = new DOMParser().parseFromString(text, 'text/xml');
+                        geojson = toGeoJSON.kml(dom);
+                    } else {
+                        geojson = JSON.parse(text);
+                    }
+                    const layer = L.geoJSON(geojson, { style: styleCustom });
+                    layer.addTo(map);
+                    const name = 'Custom Layer ' + (++customLayerCount) + ' (' + file.name + ')';
+                    ensureLayersControl();
+                    layersControl.addOverlay(layer, name);
+                    try { map.fitBounds(layer.getBounds().pad(0.15)); } catch (e) {}
+                    customStatus.textContent = 'Added ' + name + '.';
+                } catch (e) {
+                    console.error(e);
+                    customStatus.textContent = 'Failed to add layer. Ensure valid KML/GeoJSON.';
+                }
+            });
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

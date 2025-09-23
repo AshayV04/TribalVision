@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Auto-Fill Test - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-background min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-center mb-8 text-primary-800">
+                <i class="fas fa-file-upload mr-3"></i>
+                OCR Auto-Fill Test
+            </h1>
+            
+            <!-- Upload Section -->
+            <div class="mb-8">
+                <div class="border-2 border-dashed border-primary-300 rounded-lg p-8 text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-primary-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Upload FRA Claim Document</h3>
+                    <p class="text-text-secondary mb-4">Upload a PDF or image file to test OCR auto-fill functionality</p>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                    <button id="uploadBtn" class="btn-primary">
+                        <i class="fas fa-folder-open mr-2"></i>Choose File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Processing Status -->
+            <div id="processingStatus" class="hidden mb-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                        <span id="processingText" class="text-blue-800">Processing document...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden">
+                <h3 class="text-xl font-semibold text-text-primary mb-4">Extracted Information</h3>
+                
+                <!-- Confidence Score -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-text-primary">OCR Confidence</span>
+                        <span id="confidenceScore" class="text-sm font-medium text-primary-600">95%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="confidenceBar" class="bg-primary-600 h-2 rounded-full" style="width: 95%"></div>
+                    </div>
+                </div>
+
+                <!-- Auto-filled Form -->
+                <form id="claimForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Claimant Name</label>
+                            <input type="text" id="claimantName" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Spouse Name</label>
+                            <input type="text" id="spouseName" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Father/Mother Name</label>
+                            <input type="text" id="fatherMotherName" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Village</label>
+                            <input type="text" id="village" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">District</label>
+                            <input type="text" id="district" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Land Area</label>
+                            <input type="text" id="landArea" class="form-input w-full" placeholder="Auto-filled from OCR">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Scheduled Tribe</label>
+                            <select id="scheduledTribe" class="form-input w-full">
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-primary mb-1">Other Traditional Forest Dweller</label>
+                            <select id="otfd" class="form-input w-full">
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Address -->
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-1">Full Address</label>
+                        <input type="text" id="fullAddress" class="form-input w-full" placeholder="Auto-filled from OCR">
+                    </div>
+
+                    <!-- Raw OCR Text -->
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-1">Raw OCR Text</label>
+                        <textarea id="rawOcrText" class="form-input w-full h-32 text-xs" readonly placeholder="Raw text extracted from document"></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 pt-4">
+                        <button type="button" id="clearBtn" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-eraser mr-2"></i>Clear Form
+                        </button>
+                        <button type="submit" id="saveBtn" class="btn-primary">
+                            <i class="fas fa-save mr-2"></i>Save Claim
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mt-4">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i>
+                        <div>
+                            <h4 class="text-red-800 font-medium">Error</h4>
+                            <p id="errorText" class="text-red-700 text-sm mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentOcrData = null;
+
+        // Event listeners
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            clearForm();
+        });
+
+        document.getElementById('claimForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveClaim();
+        });
+
+        // File upload handling
+        function handleFileUpload(file) {
+            // Validate file type and size
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            if (!allowedTypes.includes(file.type)) {
+                showError('Please upload a PDF, JPG, or PNG file.');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                showError('File size must be less than 10MB.');
+                return;
+            }
+
+            // Show processing status
+            showProcessingStatus();
+            
+            // Process file
+            processDocument(file);
+        }
+
+        function showProcessingStatus() {
+            document.getElementById('processingStatus').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('errorText').textContent = message;
+        }
+
+        async function processDocument(file) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Update processing step
+                document.getElementById('processingText').textContent = 'Uploading document...';
+
+                const response = await fetch('http://localhost:5002/api/upload-document', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to process document');
+                }
+
+                const data = await response.json();
+                showResults(data);
+
+            } catch (error) {
+                console.error('OCR processing error:', error);
+                showError('Failed to process document. Please try again.');
+            }
+        }
+
+        function showResults(data) {
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('resultsSection').classList.remove('hidden');
+
+            // Update confidence score
+            const confidence = Math.round(data.confidence || 0);
+            document.getElementById('confidenceScore').textContent = confidence + '%';
+            document.getElementById('confidenceBar').style.width = confidence + '%';
+
+            // Auto-fill form fields
+            const extracted = data.extracted_data || {};
+            document.getElementById('claimantName').value = extracted.claimant_name || '';
+            document.getElementById('spouseName').value = extracted.spouse_name || '';
+            document.getElementById('fatherMotherName').value = extracted.father_or_mother_name || '';
+            document.getElementById('village').value = extracted.village || '';
+            document.getElementById('district').value = extracted.district || '';
+            document.getElementById('landArea').value = extracted.land_area || '';
+            document.getElementById('scheduledTribe').value = extracted.is_scheduled_tribe || '';
+            document.getElementById('otfd').value = extracted.is_otfd || '';
+            document.getElementById('fullAddress').value = data.full_address || '';
+            document.getElementById('rawOcrText').value = data.raw_text || '';
+
+            // Store data for saving
+            currentOcrData = data;
+
+            // Show success message
+            setTimeout(() => {
+                alert('✅ OCR processing completed! Form has been auto-filled with extracted data.');
+            }, 500);
+        }
+
+        function clearForm() {
+            document.getElementById('claimForm').reset();
+            document.getElementById('fileInput').value = '';
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            currentOcrData = null;
+        }
+
+        async function saveClaim() {
+            if (!currentOcrData) {
+                alert('No OCR data available to save.');
+                return;
+            }
+
+            try {
+                const formData = {
+                    filename: currentOcrData.filename,
+                    claimant_name: document.getElementById('claimantName').value,
+                    spouse_name: document.getElementById('spouseName').value,
+                    father_or_mother_name: document.getElementById('fatherMotherName').value,
+                    village: document.getElementById('village').value,
+                    district: document.getElementById('district').value,
+                    land_area: document.getElementById('landArea').value,
+                    is_scheduled_tribe: document.getElementById('scheduledTribe').value,
+                    is_otfd: document.getElementById('otfd').value,
+                    full_address: document.getElementById('fullAddress').value,
+                    raw_text: currentOcrData.raw_text,
+                    confidence: currentOcrData.confidence
+                };
+
+                const response = await fetch('http://localhost:5002/api/save-claim', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`✅ Claim saved successfully! Claim ID: ${result.claim_id}`);
+                } else {
+                    throw new Error('Failed to save claim');
+                }
+
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('❌ Failed to save claim. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

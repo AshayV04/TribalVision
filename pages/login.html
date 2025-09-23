@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 opacity-5 pointer-events-none">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E40AF" stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)"/>
+        </svg>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative min-h-screen flex items-center justify-center px-4 py-8">
+        <!-- Login Card -->
+        <div class="w-full max-w-md">
+            <!-- Header Section -->
+            <div class="text-center mb-8">
+                <!-- Government Logo -->
+                <div class="flex justify-center mb-6">
+                    <div class="bg-primary-800 p-4 rounded-xl shadow-lg">
+                        <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Title -->
+                <h1 class="text-3xl font-semibold text-text-primary mb-2">FRA Atlas WebGIS</h1>
+                <p class="text-text-secondary text-sm">Forest Rights Act Claims Management System</p>
+                
+                <!-- Trust Signals -->
+                <div class="flex justify-center items-center gap-4 mt-4 text-xs text-text-secondary">
+                    <div class="flex items-center gap-1">
+                        <i class="fas fa-shield-alt text-secondary-600"></i>
+                        <span>Government Certified</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <i class="fas fa-lock text-secondary-600"></i>
+                        <span>SSL Secured</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="floating-panel p-8">
+                <form id="loginForm" class="space-y-6">
+                    <!-- Role Selection -->
+                    <div>
+                        <label for="userRole" class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-user-tag mr-2 text-primary-600"></i>
+                            User Role
+                        </label>
+                        <select id="userRole" name="userRole" class="form-input w-full">
+                            <option value="government">Government Official</option>
+                            <option value="tribal">Tribal Representative</option>
+                            <option value="analyst">GIS Analyst</option>
+                            <option value="collector">District Collector</option>
+                        </select>
+                    </div>
+
+                    <!-- Email/Username Field -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-envelope mr-2 text-primary-600"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="email" name="email" class="form-input w-full" placeholder="Enter your email address" required />
+                        <div id="emailError" class="text-accent-600 text-sm mt-1 hidden"></div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-lock mr-2 text-primary-600"></i>
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" class="form-input w-full pr-10" placeholder="Enter your password" required />
+                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-text-primary transition-colors">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <div id="passwordError" class="text-accent-600 text-sm mt-1 hidden"></div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="rememberMe" class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                            <span class="ml-2 text-sm text-text-secondary">Remember me</span>
+                        </label>
+                        <a href="javascript:void(0)" id="forgotPasswordLink" class="text-sm text-primary-600 hover:text-primary-700 transition-colors">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button type="submit" id="signInBtn" class="btn-primary w-full py-3 text-base font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
+
+                    <!-- Error Message -->
+                    <div id="loginError" class="text-accent-600 text-sm text-center hidden"></div>
+                </form>
+
+                <!-- Demo Credentials -->
+                <div class="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
+                    <h3 class="text-sm font-medium text-primary-800 mb-2">Demo Credentials:</h3>
+                    <div class="text-xs text-primary-700 space-y-1">
+                        <div><strong>Admin:</strong> admin@fra.gov.in / admin123</div>
+                        <div><strong>Collector:</strong> collector@district.gov.in / collector123</div>
+                        <div><strong>Tribal Rep:</strong> tribal@community.org / tribal123</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="mt-6 text-center">
+                <div class="flex justify-center items-center gap-2 text-xs text-text-secondary mb-2">
+                    <i class="fas fa-shield-alt text-secondary-600"></i>
+                    <span>Your data is protected with 256-bit SSL encryption</span>
+                </div>
+                <div class="text-xs text-text-secondary">
+                    © 2025 Ministry of Tribal Affairs, Government of India. All Rights Reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 flex items-center gap-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+            <span class="text-text-primary">Authenticating...</span>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-text-primary">Reset Password</h3>
+                <button id="closeForgotModal" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="forgotPasswordForm">
+                <div class="mb-4">
+                    <label for="resetEmail" class="block text-sm font-medium text-text-primary mb-2">
+                        Email Address
+                    </label>
+                    <input type="email" id="resetEmail" class="form-input w-full" placeholder="Enter your email address" required />
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" id="cancelReset" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 btn-primary">
+                        Send Reset Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Password toggle functionality
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.className = 'fas fa-eye';
+            }
+        });
+
+        // Forgot password modal
+        document.getElementById('forgotPasswordLink').addEventListener('click', function() {
+            document.getElementById('forgotPasswordModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeForgotModal').addEventListener('click', function() {
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelReset').addEventListener('click', function() {
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+        });
+
+        // Form validation and submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('userRole').value;
+            
+            // Clear previous errors
+            document.getElementById('emailError').classList.add('hidden');
+            document.getElementById('passwordError').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+            
+            // Basic validation
+            if (!email || !password) {
+                document.getElementById('loginError').textContent = 'Please fill in all required fields.';
+                document.getElementById('loginError').classList.remove('hidden');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            // Simulate authentication
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+                // Mock authentication logic
+                const validCredentials = {
+                    'admin@fra.gov.in': 'admin123',
+                    'collector@district.gov.in': 'collector123',
+                    'tribal@community.org': 'tribal123',
+                    'analyst@gis.gov.in': 'analyst123'
+                };
+                
+                if (validCredentials[email] === password) {
+                    // Store user info in localStorage
+                    localStorage.setItem('fraUser', JSON.stringify({
+                        email: email,
+                        role: role,
+                        loginTime: new Date().toISOString()
+                    }));
+                    
+                    // Redirect to main dashboard
+                    window.location.href = 'main_dashboard.html';
+                } else {
+                    document.getElementById('loginError').textContent = 'Invalid email or password. Please try again.';
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            }, 1500);
+        });
+
+        // Forgot password form
+        document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const resetEmail = document.getElementById('resetEmail').value;
+            
+            if (!resetEmail) {
+                alert('Please enter your email address.');
+                return;
+            }
+            
+            // Simulate sending reset email
+            alert('Password reset link has been sent to your email address.');
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+            document.getElementById('resetEmail').value = '';
+        });
+
+        // Auto-fill demo credentials on role change
+        document.getElementById('userRole').addEventListener('change', function() {
+            const role = this.value;
+            const emailField = document.getElementById('email');
+            
+            switch(role) {
+                case 'government':
+                    emailField.value = 'admin@fra.gov.in';
+                    break;
+                case 'tribal':
+                    emailField.value = 'tribal@community.org';
+                    break;
+                case 'analyst':
+                    emailField.value = 'analyst@gis.gov.in';
+                    break;
+                case 'collector':
+                    emailField.value = 'collector@district.gov.in';
+                    break;
+            }
+        });
+
+        // Initialize with default credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').value = 'admin@fra.gov.in';
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

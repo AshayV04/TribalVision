@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Village Analytics - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-border-light">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="bg-primary-800 p-2 rounded-lg">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-sm text-text-secondary">Village Analytics Dashboard</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="main_dashboard.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-file-alt mr-2"></i>Claims
+                    </a>
+                    <a href="ai_asset_mapping.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-satellite mr-2"></i>AI Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                    </a>
+                    <a href="village_analytics.html" class="text-primary-600 font-medium">
+                        <i class="fas fa-chart-line mr-2"></i>Analytics
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 text-sm text-text-secondary">
+                        <i class="fas fa-sync-alt text-secondary-600"></i>
+                        <span>Last updated: 10/09/2025 11:37</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-primary-600 text-sm"></i>
+                        </div>
+                        <span class="text-sm font-medium text-text-primary">Admin User</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <!-- Village Selection and Controls -->
+        <div class="floating-panel p-6 mb-6">
+            <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Village Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-primary-600"></i>
+                            Select Village
+                        </label>
+                        <select id="villageSelect" class="form-input w-full">
+                            <option value="village1">Khairwani Village, Balaghat</option>
+                            <option value="village2">Mandla Village, Mandla</option>
+                            <option value="village3">Seoni Village, Seoni</option>
+                            <option value="village4">Dindori Village, Dindori</option>
+                        </select>
+                    </div>
+
+                    <!-- District Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-filter mr-2 text-primary-600"></i>
+                            District Filter
+                        </label>
+                        <select id="districtFilter" class="form-input w-full">
+                            <option value="all">All Districts</option>
+                            <option value="balaghat">Balaghat</option>
+                            <option value="mandla">Mandla</option>
+                            <option value="seoni">Seoni</option>
+                            <option value="dindori">Dindori</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">
+                            <i class="fas fa-search mr-2 text-primary-600"></i>
+                            Search Villages
+                        </label>
+                        <input type="text" id="villageSearch" class="form-input w-full" placeholder="Search by village name..." />
+                    </div>
+                </div>
+
+                <!-- Export Controls -->
+                <div class="flex gap-2">
+                    <button class="btn-secondary px-4 py-2 text-sm">
+                        <i class="fas fa-download mr-2"></i>Export Report
+                    </button>
+                    <button class="btn-primary px-4 py-2 text-sm">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analytics Layout -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Map Section -->
+            <div class="xl:col-span-2">
+                <div class="floating-panel p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-text-primary">
+                            <i class="fas fa-map mr-2 text-primary-600"></i>
+                            Village Geospatial Analysis
+                        </h2>
+                        <div class="flex gap-2">
+                            <button id="layerToggle" class="px-3 py-1 text-sm border border-border-light rounded-md hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-layer-group mr-1"></i>Layers
+                            </button>
+                            <button id="fullscreenMap" class="px-3 py-1 text-sm border border-border-light rounded-md hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-expand mr-1"></i>Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Map Container -->
+                    <div id="villageMap" class="w-full h-96 lg:h-[500px] rounded-lg border border-border-light relative">
+                        <!-- Map will be initialized here -->
+                        <div class="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-map text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500">Interactive Map Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Legend -->
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="text-sm font-medium text-text-primary mb-3">Map Legend</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-secondary-500 rounded"></div>
+                                <span>Forest Cover</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-warning rounded"></div>
+                                <span>Agricultural Land</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-primary-500 rounded"></div>
+                                <span>Water Bodies</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-accent-500 rounded"></div>
+                                <span>FRA Claims</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Panel -->
+            <div class="space-y-6">
+                <!-- Village Overview -->
+                <div class="floating-panel p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">
+                        <i class="fas fa-info-circle mr-2 text-primary-600"></i>
+                        Village Overview
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Total Population</span>
+                            <span class="font-semibold text-text-primary">2,847</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Tribal Households</span>
+                            <span class="font-semibold text-text-primary">456</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Total Area</span>
+                            <span class="font-semibold text-text-primary">1,245 hectares</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Forest Coverage</span>
+                            <span class="font-semibold text-secondary-600">68.5%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FRA Claims Status -->
+                <div class="floating-panel p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">
+                        <i class="fas fa-file-alt mr-2 text-primary-600"></i>
+                        FRA Claims Status
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-text-secondary">Completion Rate</span>
+                                <span class="font-semibold text-text-primary">78.5%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" style="width: 78.5%"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="p-3 bg-secondary-50 rounded-lg">
+                                <div class="text-lg font-semibold text-secondary-600">142</div>
+                                <div class="text-xs text-text-secondary">Approved</div>
+                            </div>
+                            <div class="p-3 bg-warning/10 rounded-lg">
+                                <div class="text-lg font-semibold text-warning">39</div>
+                                <div class="text-xs text-text-secondary">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheme Participation -->
+                <div class="floating-panel p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">
+                        <i class="fas fa-users mr-2 text-primary-600"></i>
+                        Scheme Participation
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">PM-KISAN</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">234</span>
+                                <div class="w-16 h-2 bg-gray-200 rounded-full">
+                                    <div class="h-full bg-secondary-500 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">DAJGUA</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">189</span>
+                                <div class="w-16 h-2 bg-gray-200 rounded-full">
+                                    <div class="h-full bg-primary-500 rounded-full" style="width: 68%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-text-secondary">Jal Shakti</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">156</span>
+                                <div class="w-16 h-2 bg-gray-200 rounded-full">
+                                    <div class="h-full bg-accent-500 rounded-full" style="width: 56%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <!-- Comparative Analysis -->
+            <div class="floating-panel p-6">
+                <h3 class="text-lg font-semibold text-text-primary mb-4">
+                    <i class="fas fa-chart-bar mr-2 text-primary-600"></i>
+                    Comparative Analysis
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-text-secondary">vs District Average</span>
+                            <span class="text-sm font-medium text-secondary-600">+12.3%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill success" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-text-secondary">vs State Average</span>
+                            <span class="text-sm font-medium text-warning">-5.8%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill warning" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <div class="text-center p-3 bg-primary-50 rounded-lg">
+                        <div class="text-lg font-semibold text-primary-600">8.2</div>
+                        <div class="text-xs text-text-secondary">Water Index</div>
+                    </div>
+                    <div class="text-center p-3 bg-secondary-50 rounded-lg">
+                        <div class="text-lg font-semibold text-secondary-600">92%</div>
+                        <div class="text-xs text-text-secondary">Infrastructure Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention Priority -->
+            <div class="floating-panel p-6">
+                <h3 class="text-lg font-semibold text-text-primary mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2 text-warning"></i>
+                    Intervention Priority
+                </h3>
+                
+                <!-- Priority Score -->
+                <div class="text-center mb-6">
+                    <div class="text-3xl font-bold text-warning mb-2">Medium</div>
+                    <div class="text-sm text-text-secondary">Priority Level</div>
+                </div>
+
+                <!-- Priority Factors -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-text-secondary">Water Access</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="h-full bg-accent-500 rounded-full" style="width: 35%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-accent-600">Low</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-text-secondary">Agricultural Support</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="h-full bg-warning rounded-full" style="width: 65%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-warning">Medium</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-text-secondary">Infrastructure</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="h-full bg-secondary-500 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-secondary-600">High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Actions -->
+                <div class="mt-4 p-3 bg-warning/10 rounded-lg">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Recommended Actions:</h4>
+                    <ul class="text-xs text-text-secondary space-y-1">
+                        <li>• Improve water infrastructure access</li>
+                        <li>• Enhance agricultural extension services</li>
+                        <li>• Monitor FRA claim processing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Trends Chart -->
+        <div class="floating-panel p-6 mt-6">
+            <h3 class="text-lg font-semibold text-text-primary mb-4">
+                <i class="fas fa-chart-line mr-2 text-primary-600"></i>
+                Village Development Trends
+            </h3>
+            <div class="h-64">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layer Control Modal -->
+    <div id="layerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-text-primary">Map Layers</h3>
+                <button id="closeLayerModal" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <label class="flex items-center">
+                    <input type="checkbox" id="villageLayer" checked class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                    <span class="ml-2 text-sm">Village Boundaries</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="fraLayer" checked class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                    <span class="ml-2 text-sm">FRA Claims</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="landUseLayer" checked class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                    <span class="ml-2 text-sm">Land Use Classification</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="infrastructureLayer" class="rounded border-border-light text-primary-600 focus:ring-primary-500" />
+                    <span class="ml-2 text-sm">Infrastructure</span>
+                </label>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button id="applyLayers" class="flex-1 btn-primary">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map
+        let villageMap;
+        let trendsChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            initializeChart();
+            setupEventListeners();
+        });
+
+        function initializeMap() {
+            // Initialize Leaflet map
+            villageMap = L.map('villageMap').setView([22.5726, 78.9629], 10);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(villageMap);
+
+            // Add sample markers for FRA claims
+            const sampleClaims = [
+                {lat: 22.5726, lng: 78.9629, title: "Claim #001", status: "Approved"},
+                {lat: 22.5826, lng: 78.9729, title: "Claim #002", status: "Pending"},
+                {lat: 22.5626, lng: 78.9529, title: "Claim #003", status: "Approved"}
+            ];
+
+            sampleClaims.forEach(claim => {
+                const marker = L.marker([claim.lat, claim.lng]).addTo(villageMap);
+                marker.bindPopup(`<b>${claim.title}</b><br>Status: ${claim.status}`);
+            });
+
+            // Add village boundary (sample polygon)
+            const villageBoundary = L.polygon([
+                [22.5626, 78.9429],
+                [22.5826, 78.9429],
+                [22.5826, 78.9829],
+                [22.5626, 78.9829]
+            ], {
+                color: '#1E40AF',
+                fillColor: '#3B82F6',
+                fillOpacity: 0.2
+            }).addTo(villageMap);
+
+            villageBoundary.bindPopup("Khairwani Village Boundary");
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'FRA Claims Processed',
+                        data: [12, 19, 15, 25, 22, 30],
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Scheme Enrollments',
+                        data: [8, 15, 12, 18, 16, 24],
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Village selection change
+            document.getElementById('villageSelect').addEventListener('change', function() {
+                const selectedVillage = this.value;
+                updateVillageData(selectedVillage);
+            });
+
+            // Layer control modal
+            document.getElementById('layerToggle').addEventListener('click', function() {
+                document.getElementById('layerModal').classList.remove('hidden');
+            });
+
+            document.getElementById('closeLayerModal').addEventListener('click', function() {
+                document.getElementById('layerModal').classList.add('hidden');
+            });
+
+            document.getElementById('applyLayers').addEventListener('click', function() {
+                // Apply layer visibility changes
+                document.getElementById('layerModal').classList.add('hidden');
+            });
+
+            // Fullscreen map
+            document.getElementById('fullscreenMap').addEventListener('click', function() {
+                const mapContainer = document.getElementById('villageMap');
+                if (mapContainer.requestFullscreen) {
+                    mapContainer.requestFullscreen();
+                }
+            });
+
+            // Search functionality
+            document.getElementById('villageSearch').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                // Implement search logic here
+                console.log('Searching for:', searchTerm);
+            });
+
+            // Export functionality
+            document.querySelector('.btn-secondary').addEventListener('click', function() {
+                // Simulate export
+                alert('Village analytics report exported successfully!');
+            });
+
+            // Refresh data
+            document.querySelector('.btn-primary').addEventListener('click', function() {
+                // Simulate data refresh
+                const button = this;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+                button.disabled = true;
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    alert('Data refreshed successfully!');
+                }, 2000);
+            });
+        }
+
+        function updateVillageData(villageId) {
+            // Simulate updating village data based on selection
+            console.log('Updating data for village:', villageId);
+            
+            // Update map center based on village
+            const villageCoords = {
+                'village1': [22.5726, 78.9629],
+                'village2': [22.6726, 79.0629],
+                'village3': [22.4726, 78.8629],
+                'village4': [22.7726, 79.1629]
+            };
+
+            if (villageCoords[villageId]) {
+                villageMap.setView(villageCoords[villageId], 12);
+            }
+        }
+
+        // Mobile menu toggle (if needed)
+        function toggleMobileMenu() {
+            const nav = document.querySelector('nav');
+            nav.classList.toggle('hidden');
+        }
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

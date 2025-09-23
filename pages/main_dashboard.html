@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Main Dashboard - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Custom Popup Styles -->
+    <style>
+        .leaflet-popup-content-wrapper {
+            background: transparent !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: auto !important;
+        }
+        
+        .leaflet-popup-tip {
+            background: white !important;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .custom-popup .popup-wrapper {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .custom-popup .popup-header {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .custom-popup .popup-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
+        }
+        
+        .custom-popup .status-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .custom-popup .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .custom-popup .status-badge:hover::before {
+            left: 100%;
+        }
+        
+        .custom-popup button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .custom-popup button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .custom-popup button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .custom-popup .info-row:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 4px;
+            margin: 0 -4px;
+            padding: 6px 4px;
+            transition: all 0.2s ease;
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md border-b border-border-light">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="bg-primary-800 p-2 rounded-lg">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-sm text-text-secondary">Main Dashboard</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="main_dashboard.html" class="text-primary-600 font-medium border-b-2 border-primary-600 pb-1">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-file-alt mr-2"></i>Claims
+                    </a>
+                    <a href="ai_asset_mapping.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-satellite mr-2"></i>AI Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                    </a>
+                    <a href="village_analytics.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </a>
+                    <a href="ocr_pipeline.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-file-text mr-2"></i>OCR Pipeline
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 bg-accent-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3" alt="User Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1584824486509-112e4181ff6b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; this.onerror=null;" />
+                            <span class="text-sm font-medium text-text-primary">Admin User</span>
+                            <i class="fas fa-chevron-down text-xs text-text-secondary"></i>
+                        </button>
+
+                        <!-- User Dropdown -->
+                        <div id="userDropdown" class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-border-light hidden z-50">
+                            <div class="p-3 border-b border-border-light">
+                                <p class="text-sm font-medium text-text-primary">Government Official</p>
+                                <p class="text-xs text-text-secondary">admin@fra.gov.in</p>
+                            </div>
+                            <div class="py-2">
+                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-text-secondary hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user mr-2"></i>Profile Settings
+                                </a>
+                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-text-secondary hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-cog mr-2"></i>Preferences
+                                </a>
+                                <hr class="my-2" />
+                                <a href="login.html" class="block px-4 py-2 text-sm text-accent-600 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobileMenu" class="md:hidden mt-4 pb-4 border-t border-border-light hidden">
+                <nav class="flex flex-col gap-2 mt-4">
+                    <a href="main_dashboard.html" class="flex items-center gap-3 px-4 py-2 text-primary-600 bg-primary-50 rounded-lg">
+                        <i class="fas fa-tachometer-alt"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:bg-gray-50 rounded-lg transition-colors">
+                        <i class="fas fa-file-alt"></i>Claims Management
+                    </a>
+                    <a href="ai_asset_mapping.html" class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:bg-gray-50 rounded-lg transition-colors">
+                        <i class="fas fa-satellite"></i>AI Asset Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:bg-gray-50 rounded-lg transition-colors">
+                        <i class="fas fa-lightbulb"></i>Recommendations
+                    </a>
+                    <a href="village_analytics.html" class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:bg-gray-50 rounded-lg transition-colors">
+                        <i class="fas fa-chart-bar"></i>Village Analytics
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex h-screen pt-20">
+        <!-- Side Panel -->
+        <div id="sidePanel" class="w-80 bg-white shadow-lg border-r border-border-light flex flex-col transition-all duration-300">
+            <!-- Panel Header -->
+            <div class="p-6 border-b border-border-light">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-text-primary">FRA Progress Overview</h2>
+                    <button id="togglePanel" class="p-2 text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                <p class="text-sm text-text-secondary mt-1">Real-time claims monitoring</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Total Claims -->
+                    <div class="floating-panel p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-text-secondary uppercase tracking-wide">Total Claims</p>
+                                <p class="text-2xl font-semibold text-text-primary">18</p>
+                            </div>
+                            <div class="bg-primary-100 p-2 rounded-lg">
+                                <i class="fas fa-file-alt text-primary-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Approved Claims -->
+                    <div class="floating-panel p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-text-secondary uppercase tracking-wide">Approved</p>
+                                <p class="text-2xl font-semibold text-secondary-600">11</p>
+                            </div>
+                            <div class="bg-secondary-100 p-2 rounded-lg">
+                                <i class="fas fa-check-circle text-secondary-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Reviews -->
+                    <div class="floating-panel p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-text-secondary uppercase tracking-wide">Pending</p>
+                                <p class="text-2xl font-semibold text-warning">5</p>
+                            </div>
+                            <div class="bg-yellow-100 p-2 rounded-lg">
+                                <i class="fas fa-clock text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rejected Claims -->
+                    <div class="floating-panel p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-text-secondary uppercase tracking-wide">Rejected</p>
+                                <p class="text-2xl font-semibold text-accent-600">2</p>
+                            </div>
+                            <div class="bg-accent-100 p-2 rounded-lg">
+                                <i class="fas fa-times-circle text-accent-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="floating-panel p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-text-primary">Completion Rate</span>
+                        <span class="text-sm text-text-secondary">62.5%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill success" style="width: 62.5%"></div>
+                    </div>
+                </div>
+
+                <!-- District Breakdown -->
+                <div class="floating-panel p-4">
+                    <h3 class="text-sm font-medium text-text-primary mb-3">Top Districts</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Sambalpur</span>
+                            <span class="text-sm font-medium text-text-primary">2 claims</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Koraput</span>
+                            <span class="text-sm font-medium text-text-primary">1 claim</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-secondary">Khurda</span>
+                            <span class="text-sm font-medium text-text-primary">1 claim</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="p-6 border-t border-border-light mt-auto">
+                <h3 class="text-sm font-medium text-text-primary mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                    <a href="ai_asset_mapping.html" class="btn-primary w-full flex items-center justify-center gap-2 py-2">
+                        <i class="fas fa-satellite"></i>
+                        AI Asset Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="btn-secondary w-full flex items-center justify-center gap-2 py-2">
+                        <i class="fas fa-lightbulb"></i>
+                        View Recommendations
+                    </a>
+                    <button class="w-full flex items-center justify-center gap-2 py-2 px-4 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-download"></i>
+                        Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="flex-1 flex flex-col">
+            <!-- Filter Toolbar -->
+            <div class="bg-white shadow-sm border-b border-border-light p-4">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- State Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-text-primary">State:</label>
+                        <select id="stateFilter" class="form-input text-sm min-w-32">
+                            <option value>All States</option>
+                            <option value="chhattisgarh">Chhattisgarh</option>
+                            <option value="odisha">Odisha</option>
+                            <option value="jharkhand">Jharkhand</option>
+                            <option value="madhya-pradesh">Madhya Pradesh</option>
+                        </select>
+                    </div>
+
+                    <!-- District Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-text-primary">District:</label>
+                        <select id="districtFilter" class="form-input text-sm min-w-32">
+                            <option value>All Districts</option>
+                            <option value="bastar">Bastar</option>
+                            <option value="dantewada">Dantewada</option>
+                            <option value="sukma">Sukma</option>
+                        </select>
+                    </div>
+
+                    <!-- Village Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-text-primary">Village:</label>
+                        <select id="villageFilter" class="form-input text-sm min-w-32">
+                            <option value>All Villages</option>
+                            <option value="village1">Kondagaon</option>
+                            <option value="village2">Jagdalpur</option>
+                            <option value="village3">Narayanpur</option>
+                        </select>
+                    </div>
+
+                    <!-- Tribal Group Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-text-primary">Tribal Group:</label>
+                        <select id="tribalFilter" class="form-input text-sm min-w-32">
+                            <option value>All Groups</option>
+                            <option value="gond">Gond</option>
+                            <option value="baiga">Baiga</option>
+                            <option value="korku">Korku</option>
+                        </select>
+                    </div>
+
+                    <!-- Results Count -->
+                    <div class="ml-auto flex items-center gap-4">
+                        <div class="text-sm text-text-secondary">
+                            Showing <span id="resultsCount" class="font-medium text-text-primary">8</span> claims
+                        </div>
+                        <button id="clearFilters" class="text-sm text-primary-600 hover:text-primary-700 transition-colors">
+                            <i class="fas fa-times mr-1"></i>Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="flex-1 relative">
+                <div id="map" class="w-full h-full"></div>
+
+                <!-- Map Controls -->
+                <div class="absolute top-4 right-4 space-y-2" style="z-index: 1000;">
+                    <!-- Layer Controls -->
+                    <div class="floating-panel p-3">
+                        <h4 class="text-sm font-medium text-text-primary mb-2">Map Layers</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="claimsLayer" checked class="rounded text-primary-600" />
+                                <span>FRA Claims</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="villageBoundaryLayerToggle" checked class="rounded text-primary-600" />
+                                <span>Village Boundaries</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="districtBoundaryLayerToggle" class="rounded text-primary-600" />
+                                <span>District Boundaries</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="landUseLayer" class="rounded text-primary-600" />
+                                <span>Land Use</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="infrastructureLayer" class="rounded text-primary-600" />
+                                <span>Infrastructure</span>
+                            </label>
+                            <div id="boundaryStatus" class="text-xs text-text-secondary"></div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="floating-panel p-3">
+                        <h4 class="text-sm font-medium text-text-primary mb-2">Legend</h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-secondary-500 rounded-full"></div>
+                                <span>Approved Claims</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-warning rounded-full"></div>
+                                <span>Pending Claims</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-accent-500 rounded-full"></div>
+                                <span>Rejected Claims</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 border-2 border-primary-600 bg-transparent"></div>
+                                <span>Village Boundaries</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="mapLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-20 hidden">
+                    <div class="flex items-center gap-3">
+                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                        <span class="text-text-primary">Loading map data...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim Details Modal -->
+    <div id="claimModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" style="z-index: 2000;">
+        <div class="bg-white rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-border-light">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-text-primary">FRA Claim Details</h3>
+                    <button id="closeModal" class="text-text-secondary hover:text-text-primary">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="claimDetails" class="space-y-4">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+                
+                <!-- DSS Scheme Recommendations -->
+                <div class="mt-6">
+                    <h4 class="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-primary-600"></i>
+                        DSS Scheme Recommendations
+                    </h4>
+                    <div id="schemeRecommendations" class="space-y-2">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
+    
+    <script>
+        // Global variables
+        let map;
+        let claimsLayer;
+        let villageLayer;
+        let districtBoundaryLayer;
+        let landUseLayer;
+        let infrastructureLayer;
+        let markersCluster;
+
+        // Mock data with enhanced DSS information - Odisha FRA Claims
+        const mockClaims = [
+            // Bhubaneswar-Khurda region
+            {
+                id: 'FRA001',
+                lat: 20.2961,
+                lng: 85.8245,
+                status: 'approved',
+                claimant: 'Ramesh Gond',
+                village: 'Khandagiri',
+                district: 'Khurda',
+                state: 'Odisha',
+                tribalGroup: 'Gond',
+                area: '2.5 hectares',
+                dateSubmitted: '15/03/2024',
+                dateApproved: '10/09/2024',
+                schemes: ['PM-KISAN', 'DAJGUA'],
+                dssRecommendations: {
+                    priority: 85,
+                    waterIndex: 72,
+                    vulnerability: 'Medium',
+                    socioEconomicScore: 68,
+                    forestCover: 45,
+                    infrastructureIndex: 52,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 95, reason: 'Agricultural land holder' },
+                        'DAJGUA': { score: 88, reason: 'Tribal community, forest rights' },
+                        'Jal Jeevan Mission': { score: 72, reason: 'Water scarcity area' },
+                        'MGNREGA': { score: 91, reason: 'Rural employment needed' },
+                        'PMAY-G': { score: 65, reason: 'Housing upgrade required' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: '3-6 months'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: '6-12 months'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'Medium',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        }
+                    ]
+                }
+            },
+            // Cuttack region
+            {
+                id: 'FRA002',
+                lat: 20.4625,
+                lng: 85.8820,
+                status: 'pending',
+                claimant: 'Sunita Baiga',
+                village: 'Athagarh',
+                district: 'Cuttack',
+                state: 'Odisha',
+                tribalGroup: 'Baiga',
+                area: '1.8 hectares',
+                dateSubmitted: '22/05/2024',
+                schemes: ['Jal Shakti', 'FRA Legal Aid'],
+                dssRecommendations: {
+                    priority: 78,
+                    waterIndex: 45,
+                    vulnerability: 'High',
+                    socioEconomicScore: 42,
+                    forestCover: 38,
+                    infrastructureIndex: 35,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 98, reason: 'Claim pending approval' },
+                        'Jal Shakti Abhiyan': { score: 85, reason: 'Water scarcity critical' },
+                        'PM-KISAN': { score: 75, reason: 'Pending FRA approval' },
+                        'PMAY-G': { score: 70, reason: 'Housing assistance needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'In Progress',
+                            priority: 'Critical',
+                            description: 'Legal assistance for claim processing',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'Jal Shakti Abhiyan',
+                            status: 'Recommended',
+                            priority: 'High',
+                            description: 'Water conservation and recharge structures',
+                            amount: '₹10,000-25,000',
+                            implementation: '1-3 months'
+                        },
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Pending Approval',
+                            priority: 'High',
+                            description: 'Direct income support upon FRA approval',
+                            amount: '₹6,000/year',
+                            implementation: 'After FRA approval'
+                        },
+                        {
+                            scheme: 'PMAY-G',
+                            status: 'Eligible',
+                            priority: 'Medium',
+                            description: 'Housing assistance for rural areas',
+                            amount: '₹1.2-1.5 lakhs',
+                            implementation: '6-12 months'
+                        }
+                    ]
+                }
+            },
+            // Sambalpur region
+            {
+                id: 'FRA003',
+                lat: 21.4707,
+                lng: 83.9706,
+                status: 'approved',
+                claimant: 'Mohan Korku',
+                village: 'Rengali',
+                district: 'Sambalpur',
+                state: 'Odisha',
+                tribalGroup: 'Korku',
+                area: '3.2 hectares',
+                dateSubmitted: '08/01/2024',
+                dateApproved: '25/08/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'Jal Shakti'],
+                dssRecommendations: {
+                    priority: 92,
+                    waterIndex: 88,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 78,
+                    forestCover: 65,
+                    infrastructureIndex: 72,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 95, reason: 'Tribal development priority' },
+                        'Jal Jeevan Mission': { score: 90, reason: 'Water infrastructure good' },
+                        'PMKSY': { score: 85, reason: 'Micro-irrigation potential' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Completed',
+                            priority: 'High',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: 'Completed'
+                        },
+                        {
+                            scheme: 'PMKSY',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Micro-irrigation for water efficiency',
+                            amount: '₹5,000-10,000',
+                            implementation: '3-6 months'
+                        }
+                    ]
+                }
+            },
+            // Koraput region
+            {
+                id: 'FRA004',
+                lat: 18.8106,
+                lng: 82.7100,
+                status: 'approved',
+                claimant: 'Lakshmi Paroja',
+                village: 'Koraput',
+                district: 'Koraput',
+                state: 'Odisha',
+                tribalGroup: 'Paroja',
+                area: '2.8 hectares',
+                dateSubmitted: '12/02/2024',
+                dateApproved: '15/07/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'MGNREGA'],
+                dssRecommendations: {
+                    priority: 88,
+                    waterIndex: 65,
+                    vulnerability: 'Medium',
+                    socioEconomicScore: 55,
+                    forestCover: 72,
+                    infrastructureIndex: 48,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 92, reason: 'Agricultural land holder' },
+                        'DAJGUA': { score: 95, reason: 'Tribal community priority' },
+                        'MGNREGA': { score: 88, reason: 'Employment generation needed' },
+                        'PMAY-G': { score: 75, reason: 'Housing improvement required' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'PMAY-G',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Housing assistance for rural areas',
+                            amount: '₹1.2-1.5 lakhs',
+                            implementation: '6-12 months'
+                        }
+                    ]
+                }
+            },
+            // Mayurbhanj region
+            {
+                id: 'FRA005',
+                lat: 21.9304,
+                lng: 86.7405,
+                status: 'pending',
+                claimant: 'Suresh Munda',
+                village: 'Baripada',
+                district: 'Mayurbhanj',
+                state: 'Odisha',
+                tribalGroup: 'Munda',
+                area: '1.5 hectares',
+                dateSubmitted: '18/06/2024',
+                schemes: ['FRA Legal Aid', 'Jal Shakti'],
+                dssRecommendations: {
+                    priority: 72,
+                    waterIndex: 38,
+                    vulnerability: 'High',
+                    socioEconomicScore: 45,
+                    forestCover: 58,
+                    infrastructureIndex: 42,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 95, reason: 'Claim processing assistance' },
+                        'Jal Shakti Abhiyan': { score: 88, reason: 'Water scarcity area' },
+                        'PM-KISAN': { score: 70, reason: 'Pending FRA approval' },
+                        'MGNREGA': { score: 82, reason: 'Employment generation critical' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'In Progress',
+                            priority: 'Critical',
+                            description: 'Legal assistance for claim processing',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'Jal Shakti Abhiyan',
+                            status: 'Recommended',
+                            priority: 'High',
+                            description: 'Water conservation and recharge structures',
+                            amount: '₹10,000-25,000',
+                            implementation: '1-3 months'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Pending Approval',
+                            priority: 'Medium',
+                            description: 'Direct income support upon FRA approval',
+                            amount: '₹6,000/year',
+                            implementation: 'After FRA approval'
+                        }
+                    ]
+                }
+            },
+            // Sundargarh region
+            {
+                id: 'FRA006',
+                lat: 22.1167,
+                lng: 84.0333,
+                status: 'approved',
+                claimant: 'Ranjit Oraon',
+                village: 'Sundargarh',
+                district: 'Sundargarh',
+                state: 'Odisha',
+                tribalGroup: 'Oraon',
+                area: '3.5 hectares',
+                dateSubmitted: '05/01/2024',
+                dateApproved: '20/06/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'Jal Jeevan Mission'],
+                dssRecommendations: {
+                    priority: 95,
+                    waterIndex: 82,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 72,
+                    forestCover: 68,
+                    infrastructureIndex: 78,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 92, reason: 'Tribal development priority' },
+                        'Jal Jeevan Mission': { score: 88, reason: 'Water infrastructure good' },
+                        'PMKSY': { score: 82, reason: 'Micro-irrigation potential' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Completed',
+                            priority: 'High',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: 'Completed'
+                        },
+                        {
+                            scheme: 'PMKSY',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Micro-irrigation for water efficiency',
+                            amount: '₹5,000-10,000',
+                            implementation: '3-6 months'
+                        }
+                    ]
+                }
+            },
+            // Kandhamal region
+            {
+                id: 'FRA007',
+                lat: 20.4667,
+                lng: 84.2333,
+                status: 'rejected',
+                claimant: 'Biswanath Kondh',
+                village: 'Phulbani',
+                district: 'Kandhamal',
+                state: 'Odisha',
+                tribalGroup: 'Kondh',
+                area: '2.0 hectares',
+                dateSubmitted: '10/04/2024',
+                dateRejected: '15/08/2024',
+                schemes: ['FRA Legal Aid', 'Appeal Process'],
+                dssRecommendations: {
+                    priority: 45,
+                    waterIndex: 52,
+                    vulnerability: 'High',
+                    socioEconomicScore: 38,
+                    forestCover: 62,
+                    infrastructureIndex: 35,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 98, reason: 'Appeal assistance needed' },
+                        'MGNREGA': { score: 85, reason: 'Employment generation critical' },
+                        'PMAY-G': { score: 78, reason: 'Housing assistance needed' },
+                        'PM-KISAN': { score: 25, reason: 'FRA claim rejected' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'Critical',
+                            priority: 'Critical',
+                            description: 'Legal assistance for appeal process',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'PMAY-G',
+                            status: 'Eligible',
+                            priority: 'Medium',
+                            description: 'Housing assistance for rural areas',
+                            amount: '₹1.2-1.5 lakhs',
+                            implementation: '6-12 months'
+                        },
+                        {
+                            scheme: 'Appeal Process',
+                            status: 'Recommended',
+                            priority: 'Critical',
+                            description: 'File appeal for FRA claim reconsideration',
+                            amount: '₹500-1,000',
+                            implementation: '1-2 months'
+                        }
+                    ]
+                }
+            },
+            // Gajapati region
+            {
+                id: 'FRA008',
+                lat: 19.3500,
+                lng: 84.1833,
+                status: 'approved',
+                claimant: 'Kamala Saora',
+                village: 'Paralakhemundi',
+                district: 'Gajapati',
+                state: 'Odisha',
+                tribalGroup: 'Saora',
+                area: '2.2 hectares',
+                dateSubmitted: '25/03/2024',
+                dateApproved: '12/09/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'MGNREGA'],
+                dssRecommendations: {
+                    priority: 82,
+                    waterIndex: 68,
+                    vulnerability: 'Medium',
+                    socioEconomicScore: 58,
+                    forestCover: 55,
+                    infrastructureIndex: 62,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 95, reason: 'Agricultural land holder' },
+                        'DAJGUA': { score: 90, reason: 'Tribal community priority' },
+                        'MGNREGA': { score: 85, reason: 'Employment generation needed' },
+                        'Jal Jeevan Mission': { score: 75, reason: 'Water infrastructure improvement' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: '6-12 months'
+                        }
+                    ]
+                }
+            },
+            // Additional 10 sample claims scattered across Odisha
+            // Keonjhar region
+            {
+                id: 'FRA009',
+                lat: 21.6333,
+                lng: 85.5833,
+                status: 'approved',
+                claimant: 'Suresh Munda',
+                village: 'Keonjhar',
+                district: 'Keonjhar',
+                state: 'Odisha',
+                tribalGroup: 'Munda',
+                area: '3.1 hectares',
+                dateSubmitted: '20/02/2024',
+                dateApproved: '05/08/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'MGNREGA'],
+                dssRecommendations: {
+                    priority: 89,
+                    waterIndex: 78,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 75,
+                    forestCover: 68,
+                    infrastructureIndex: 82,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 92, reason: 'Tribal development priority' },
+                        'Jal Jeevan Mission': { score: 85, reason: 'Water infrastructure good' },
+                        'MGNREGA': { score: 88, reason: 'Employment generation needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        }
+                    ]
+                }
+            },
+            // Baleshwar region
+            {
+                id: 'FRA010',
+                lat: 21.4944,
+                lng: 86.9336,
+                status: 'pending',
+                claimant: 'Kamala Devi Santhal',
+                village: 'Baleshwar',
+                district: 'Baleshwar',
+                state: 'Odisha',
+                tribalGroup: 'Santhal',
+                area: '2.3 hectares',
+                dateSubmitted: '28/06/2024',
+                schemes: ['FRA Legal Aid', 'Jal Shakti'],
+                dssRecommendations: {
+                    priority: 76,
+                    waterIndex: 45,
+                    vulnerability: 'High',
+                    socioEconomicScore: 48,
+                    forestCover: 52,
+                    infrastructureIndex: 38,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 95, reason: 'Claim processing assistance' },
+                        'Jal Shakti Abhiyan': { score: 88, reason: 'Water scarcity area' },
+                        'PM-KISAN': { score: 70, reason: 'Pending FRA approval' },
+                        'PMAY-G': { score: 72, reason: 'Housing assistance needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'In Progress',
+                            priority: 'Critical',
+                            description: 'Legal assistance for claim processing',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'Jal Shakti Abhiyan',
+                            status: 'Recommended',
+                            priority: 'High',
+                            description: 'Water conservation and recharge structures',
+                            amount: '₹10,000-25,000',
+                            implementation: '1-3 months'
+                        },
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Pending Approval',
+                            priority: 'High',
+                            description: 'Direct income support upon FRA approval',
+                            amount: '₹6,000/year',
+                            implementation: 'After FRA approval'
+                        }
+                    ]
+                }
+            },
+            // Jajpur region
+            {
+                id: 'FRA011',
+                lat: 20.8500,
+                lng: 86.3333,
+                status: 'approved',
+                claimant: 'Biswanath Ho',
+                village: 'Jajpur',
+                district: 'Jajpur',
+                state: 'Odisha',
+                tribalGroup: 'Ho',
+                area: '4.2 hectares',
+                dateSubmitted: '10/01/2024',
+                dateApproved: '22/07/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'Jal Jeevan Mission'],
+                dssRecommendations: {
+                    priority: 91,
+                    waterIndex: 85,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 82,
+                    forestCover: 58,
+                    infrastructureIndex: 88,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 95, reason: 'Tribal development priority' },
+                        'Jal Jeevan Mission': { score: 90, reason: 'Water infrastructure good' },
+                        'PMKSY': { score: 85, reason: 'Micro-irrigation potential' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Completed',
+                            priority: 'High',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: 'Completed'
+                        }
+                    ]
+                }
+            },
+            // Bhadrak region
+            {
+                id: 'FRA012',
+                lat: 21.0667,
+                lng: 86.5000,
+                status: 'rejected',
+                claimant: 'Ranjit Kumar Bhumij',
+                village: 'Bhadrak',
+                district: 'Bhadrak',
+                state: 'Odisha',
+                tribalGroup: 'Bhumij',
+                area: '1.8 hectares',
+                dateSubmitted: '15/04/2024',
+                dateRejected: '20/09/2024',
+                schemes: ['FRA Legal Aid', 'Appeal Process'],
+                dssRecommendations: {
+                    priority: 42,
+                    waterIndex: 48,
+                    vulnerability: 'High',
+                    socioEconomicScore: 35,
+                    forestCover: 45,
+                    infrastructureIndex: 28,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 98, reason: 'Appeal assistance needed' },
+                        'MGNREGA': { score: 85, reason: 'Employment generation critical' },
+                        'PMAY-G': { score: 78, reason: 'Housing assistance needed' },
+                        'PM-KISAN': { score: 20, reason: 'FRA claim rejected' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'Critical',
+                            priority: 'Critical',
+                            description: 'Legal assistance for appeal process',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Appeal Process',
+                            status: 'Recommended',
+                            priority: 'Critical',
+                            description: 'File appeal for FRA claim reconsideration',
+                            amount: '₹500-1,000',
+                            implementation: '1-2 months'
+                        }
+                    ]
+                }
+            },
+            // Cuttack region
+            {
+                id: 'FRA013',
+                lat: 20.4625,
+                lng: 85.8820,
+                status: 'approved',
+                claimant: 'Lakshmi Devi Gond',
+                village: 'Athagarh',
+                district: 'Cuttack',
+                state: 'Odisha',
+                tribalGroup: 'Gond',
+                area: '3.7 hectares',
+                dateSubmitted: '05/03/2024',
+                dateApproved: '18/08/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'MGNREGA'],
+                dssRecommendations: {
+                    priority: 87,
+                    waterIndex: 82,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 78,
+                    forestCover: 62,
+                    infrastructureIndex: 85,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 92, reason: 'Tribal development priority' },
+                        'MGNREGA': { score: 88, reason: 'Employment generation needed' },
+                        'Jal Jeevan Mission': { score: 85, reason: 'Water infrastructure good' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        }
+                    ]
+                }
+            },
+            // Puri region
+            {
+                id: 'FRA014',
+                lat: 19.8006,
+                lng: 85.8189,
+                status: 'pending',
+                claimant: 'Ganesh Mahanta',
+                village: 'Puri',
+                district: 'Puri',
+                state: 'Odisha',
+                tribalGroup: 'Mahanta',
+                area: '2.1 hectares',
+                dateSubmitted: '12/07/2024',
+                schemes: ['FRA Legal Aid', 'Jal Shakti'],
+                dssRecommendations: {
+                    priority: 73,
+                    waterIndex: 55,
+                    vulnerability: 'Medium',
+                    socioEconomicScore: 58,
+                    forestCover: 48,
+                    infrastructureIndex: 65,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 95, reason: 'Claim processing assistance' },
+                        'Jal Shakti Abhiyan': { score: 85, reason: 'Water scarcity area' },
+                        'PM-KISAN': { score: 75, reason: 'Pending FRA approval' },
+                        'PMAY-G': { score: 68, reason: 'Housing assistance needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'In Progress',
+                            priority: 'Critical',
+                            description: 'Legal assistance for claim processing',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'Jal Shakti Abhiyan',
+                            status: 'Recommended',
+                            priority: 'High',
+                            description: 'Water conservation and recharge structures',
+                            amount: '₹10,000-25,000',
+                            implementation: '1-3 months'
+                        },
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Pending Approval',
+                            priority: 'Medium',
+                            description: 'Direct income support upon FRA approval',
+                            amount: '₹6,000/year',
+                            implementation: 'After FRA approval'
+                        }
+                    ]
+                }
+            },
+            // Dhenkanal region
+            {
+                id: 'FRA015',
+                lat: 20.6667,
+                lng: 85.6000,
+                status: 'approved',
+                claimant: 'Sita Devi Kui',
+                village: 'Dhenkanal',
+                district: 'Dhenkanal',
+                state: 'Odisha',
+                tribalGroup: 'Kui',
+                area: '2.8 hectares',
+                dateSubmitted: '18/02/2024',
+                dateApproved: '30/07/2024',
+                schemes: ['PM-KISAN', 'DAJGUA'],
+                dssRecommendations: {
+                    priority: 84,
+                    waterIndex: 78,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 72,
+                    forestCover: 65,
+                    infrastructureIndex: 78,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 95, reason: 'Agricultural land holder' },
+                        'DAJGUA': { score: 90, reason: 'Tribal community priority' },
+                        'Jal Jeevan Mission': { score: 82, reason: 'Water infrastructure good' },
+                        'MGNREGA': { score: 85, reason: 'Employment generation needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Jal Jeevan Mission',
+                            status: 'Recommended',
+                            priority: 'Medium',
+                            description: 'Household tap water connection',
+                            amount: '₹3,500-5,000',
+                            implementation: '6-12 months'
+                        }
+                    ]
+                }
+            },
+            // Angul region
+            {
+                id: 'FRA016',
+                lat: 20.8333,
+                lng: 85.1000,
+                status: 'pending',
+                claimant: 'Prakash Chandra Juang',
+                village: 'Angul',
+                district: 'Angul',
+                state: 'Odisha',
+                tribalGroup: 'Juang',
+                area: '3.3 hectares',
+                dateSubmitted: '25/05/2024',
+                schemes: ['FRA Legal Aid', 'Jal Shakti'],
+                dssRecommendations: {
+                    priority: 79,
+                    waterIndex: 62,
+                    vulnerability: 'Medium',
+                    socioEconomicScore: 65,
+                    forestCover: 58,
+                    infrastructureIndex: 72,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 95, reason: 'Claim processing assistance' },
+                        'Jal Shakti Abhiyan': { score: 88, reason: 'Water scarcity area' },
+                        'PM-KISAN': { score: 78, reason: 'Pending FRA approval' },
+                        'MGNREGA': { score: 82, reason: 'Employment generation needed' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'In Progress',
+                            priority: 'Critical',
+                            description: 'Legal assistance for claim processing',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'Jal Shakti Abhiyan',
+                            status: 'Recommended',
+                            priority: 'High',
+                            description: 'Water conservation and recharge structures',
+                            amount: '₹10,000-25,000',
+                            implementation: '1-3 months'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        }
+                    ]
+                }
+            },
+            // Nayagarh region
+            {
+                id: 'FRA017',
+                lat: 20.1333,
+                lng: 85.1000,
+                status: 'approved',
+                claimant: 'Radha Devi Saora',
+                village: 'Nayagarh',
+                district: 'Nayagarh',
+                state: 'Odisha',
+                tribalGroup: 'Saora',
+                area: '2.6 hectares',
+                dateSubmitted: '08/04/2024',
+                dateApproved: '25/09/2024',
+                schemes: ['PM-KISAN', 'DAJGUA', 'MGNREGA'],
+                dssRecommendations: {
+                    priority: 86,
+                    waterIndex: 75,
+                    vulnerability: 'Low',
+                    socioEconomicScore: 74,
+                    forestCover: 68,
+                    infrastructureIndex: 80,
+                    schemeEligibility: {
+                        'PM-KISAN': { score: 98, reason: 'Active agricultural land' },
+                        'DAJGUA': { score: 92, reason: 'Tribal development priority' },
+                        'MGNREGA': { score: 88, reason: 'Employment generation needed' },
+                        'Jal Jeevan Mission': { score: 85, reason: 'Water infrastructure good' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'PM-KISAN',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Direct income support for agricultural activities',
+                            amount: '₹6,000/year',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'DAJGUA',
+                            status: 'Active',
+                            priority: 'High',
+                            description: 'Comprehensive development of tribal villages',
+                            amount: '₹20,000-50,000',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        }
+                    ]
+                }
+            },
+            // Boudh region
+            {
+                id: 'FRA018',
+                lat: 20.8333,
+                lng: 84.3333,
+                status: 'rejected',
+                claimant: 'Niranjan Pradhan',
+                village: 'Boudh',
+                district: 'Boudh',
+                state: 'Odisha',
+                tribalGroup: 'Pradhan',
+                area: '1.9 hectares',
+                dateSubmitted: '22/03/2024',
+                dateRejected: '15/08/2024',
+                schemes: ['FRA Legal Aid', 'Appeal Process'],
+                dssRecommendations: {
+                    priority: 38,
+                    waterIndex: 42,
+                    vulnerability: 'High',
+                    socioEconomicScore: 32,
+                    forestCover: 38,
+                    infrastructureIndex: 25,
+                    schemeEligibility: {
+                        'FRA Legal Aid': { score: 98, reason: 'Appeal assistance needed' },
+                        'MGNREGA': { score: 88, reason: 'Employment generation critical' },
+                        'PMAY-G': { score: 75, reason: 'Housing assistance needed' },
+                        'PM-KISAN': { score: 15, reason: 'FRA claim rejected' }
+                    },
+                    recommendations: [
+                        {
+                            scheme: 'FRA Legal Aid',
+                            status: 'Critical',
+                            priority: 'Critical',
+                            description: 'Legal assistance for appeal process',
+                            amount: 'Free',
+                            implementation: 'Immediate'
+                        },
+                        {
+                            scheme: 'MGNREGA',
+                            status: 'Eligible',
+                            priority: 'High',
+                            description: 'Water conservation and land development works',
+                            amount: '₹200-300/day',
+                            implementation: 'Ongoing'
+                        },
+                        {
+                            scheme: 'Appeal Process',
+                            status: 'Recommended',
+                            priority: 'Critical',
+                            description: 'File appeal for FRA claim reconsideration',
+                            amount: '₹500-1,000',
+                            implementation: '1-2 months'
+                        }
+                    ]
+                }
+            }
+        ];
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([20.2961, 85.8245], 7);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Panes for layering to avoid overlap
+            map.createPane('boundaryPane');
+            map.getPane('boundaryPane').style.zIndex = 350;
+            map.createPane('assetPane');
+            map.getPane('assetPane').style.zIndex = 450;
+
+            // Initialize marker cluster
+            markersCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50
+            });
+
+            // Load claims data
+            loadClaimsData();
+
+            // Load boundary layers
+            loadBoundaryLayers();
+        }
+
+        // Load claims data
+        function loadClaimsData() {
+            markersCluster.clearLayers();
+
+            mockClaims.forEach(claim => {
+                const marker = createClaimMarker(claim);
+                markersCluster.addLayer(marker);
+            });
+
+            map.addLayer(markersCluster);
+        }
+
+        // Create claim marker
+        function createClaimMarker(claim) {
+            let color;
+            switch(claim.status) {
+                case 'approved':
+                    color = '#10B981';
+                    break;
+                case 'pending':
+                    color = '#F59E0B';
+                    break;
+                case 'rejected':
+                    color = '#EF4444';
+                    break;
+                default:
+                    color = '#6B7280';
+            }
+
+            const marker = L.circleMarker([claim.lat, claim.lng], {
+                radius: 8,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8,
+                pane: 'assetPane'
+            });
+
+            marker.bindPopup(`
+                <div class="popup-wrapper" style="
+                    min-width: 280px;
+                    max-width: 320px;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                ">
+                    <div class="popup-header" style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 12px 16px;
+                        margin: -8px -8px 0 -8px;
+                        border-radius: 8px 8px 0 0;
+                        position: relative;
+                    ">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 style="
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    margin: 0;
+                                    color: white;
+                                ">${claim.claimant}</h4>
+                                <p style="
+                                    font-size: 12px;
+                                    margin: 2px 0 0 0;
+                                    opacity: 0.9;
+                                    color: white;
+                                ">${claim.tribalGroup} • ${claim.village}</p>
+                            </div>
+                            <div style="
+                                background: rgba(255,255,255,0.2);
+                                border-radius: 50%;
+                                width: 32px;
+                                height: 32px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                <i class="fas fa-map-marker-alt" style="font-size: 14px; color: white;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-content" style="
+                        padding: 16px;
+                        background: white;
+                        border-radius: 0 0 8px 8px;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    ">
+                        <div class="claim-info" style="margin-bottom: 16px;">
+                            <div class="info-row" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 8px;
+                                padding: 6px 0;
+                                border-bottom: 1px solid #f3f4f6;
+                            ">
+                                <span style="
+                                    font-size: 12px;
+                                    color: #6b7280;
+                                    font-weight: 500;
+                                ">Claim ID</span>
+                                <span style="
+                                    font-size: 12px;
+                                    color: #374151;
+                                    font-weight: 600;
+                                    font-family: 'Monaco', 'Menlo', monospace;
+                                ">${claim.id}</span>
+                            </div>
+                            
+                            <div class="info-row" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 8px;
+                                padding: 6px 0;
+                                border-bottom: 1px solid #f3f4f6;
+                            ">
+                                <span style="
+                                    font-size: 12px;
+                                    color: #6b7280;
+                                    font-weight: 500;
+                                ">Status</span>
+                                <span class="status-badge" style="
+                                    padding: 4px 8px;
+                                    border-radius: 12px;
+                                    font-size: 11px;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                    ${claim.status === 'approved' ? 'background: #d1fae5; color: #065f46;' : 
+                                      claim.status === 'pending' ? 'background: #fef3c7; color: #92400e;' : 
+                                      'background: #fee2e2; color: #991b1b;'}
+                                ">${claim.status}</span>
+                            </div>
+                            
+                            <div class="info-row" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 8px;
+                                padding: 6px 0;
+                                border-bottom: 1px solid #f3f4f6;
+                            ">
+                                <span style="
+                                    font-size: 12px;
+                                    color: #6b7280;
+                                    font-weight: 500;
+                                ">Area</span>
+                                <span style="
+                                    font-size: 12px;
+                                    color: #374151;
+                                    font-weight: 600;
+                                ">${claim.area}</span>
+                            </div>
+                            
+                            <div class="info-row" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                padding: 6px 0;
+                            ">
+                                <span style="
+                                    font-size: 12px;
+                                    color: #6b7280;
+                                    font-weight: 500;
+                                ">District</span>
+                                <span style="
+                                    font-size: 12px;
+                                    color: #374151;
+                                    font-weight: 600;
+                                ">${claim.district}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="popup-actions" style="
+                            display: flex;
+                            gap: 8px;
+                            margin-top: 16px;
+                        ">
+                            <button onclick="showClaimDetails('${claim.id}')" style="
+                                flex: 1;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border: none;
+                                padding: 10px 16px;
+                                border-radius: 6px;
+                                font-size: 12px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+                            " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(102, 126, 234, 0.4)'" 
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.3)'">
+                                <i class="fas fa-eye" style="margin-right: 6px;"></i>
+                                View Details
+                            </button>
+                            <button onclick="navigateToClaim('${claim.id}')" style="
+                                background: #f8fafc;
+                                color: #475569;
+                                border: 1px solid #e2e8f0;
+                                padding: 10px 12px;
+                                border-radius: 6px;
+                                font-size: 12px;
+                                font-weight: 500;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='#e2e8f0'; this.style.borderColor='#cbd5e1'" 
+                               onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'">
+                                <i class="fas fa-directions"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `, {
+                maxWidth: 350,
+                className: 'custom-popup'
+            });
+
+            return marker;
+        }
+
+        // Load boundary layers (district KML and village GeoJSON)
+        async function loadBoundaryLayers() {
+            try {
+                // District boundaries: odisha.kml at project root
+                await ensureDistrictLayerLoaded();
+
+                // Village boundaries: or1.geojson at project root
+                await ensureVillageLayerLoaded();
+
+                // Add enabled-by-default layers
+                if (villageLayer) villageLayer.addTo(map);
+
+                // Fit to boundaries if available
+                const group = L.featureGroup([]);
+                if (districtBoundaryLayer) group.addLayer(districtBoundaryLayer);
+                if (villageLayer) group.addLayer(villageLayer);
+                if (group.getLayers().length > 0) {
+                    try { map.fitBounds(group.getBounds().pad(0.15)); } catch (e) {}
+                }
+            } catch (e) {
+                console.error('Failed to load boundary layers', e);
+            }
+        }
+
+        async function ensureDistrictLayerLoaded() {
+            if (districtBoundaryLayer) return districtBoundaryLayer;
+            try {
+                const status = document.getElementById('boundaryStatus');
+                if (location.protocol === 'file:') {
+                    if (status) status.textContent = 'Cannot fetch KML via file://. Please run a local server (e.g., python -m http.server) and open http://localhost:PORT/pages/main_dashboard.html';
+                }
+                const kmlCandidates = ['/odisha.kml', '/public/odisha.kml', '../odisha.kml', '../public/odisha.kml', './odisha.kml', './public/odisha.kml'];
+                let kmlText = null;
+                let usedPath = null;
+                if (status) status.textContent = 'Loading ' + kmlCandidates.join(' or ') + ' …';
+                for (const p of kmlCandidates) {
+                    try {
+                        const res = await fetch(p);
+                        if (res.ok) { kmlText = await res.text(); usedPath = p; break; }
+                    } catch (e) { console.warn('Fetch failed', p, e); }
+                }
+                if (!kmlText) {
+                    if (status) status.textContent = 'odisha.kml not found (tried root and public)';
+                    return null;
+                }
+                const kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
+                if (window.toGeoJSON && window.toGeoJSON.kml) {
+                    const odishaGeo = window.toGeoJSON.kml(kmlDom);
+                    districtBoundaryLayer = L.geoJSON(odishaGeo, {
+                        pane: 'boundaryPane',
+                        style: { color: '#111827', weight: 1.5, fillColor: '#ffffff', fillOpacity: 0.05 }
+                    });
+                    if (status) status.textContent = 'Loaded: ' + usedPath;
+                } else {
+                    if (status) status.textContent = 'KML parser not available';
+                }
+            } catch (e) {
+                console.error('District KML load failed', e);
+                const status = document.getElementById('boundaryStatus');
+                if (status) status.textContent = 'Failed to load odisha.kml';
+            }
+            return districtBoundaryLayer;
+        }
+
+        async function ensureVillageLayerLoaded() {
+            if (villageLayer) return villageLayer;
+            try {
+                const status = document.getElementById('boundaryStatus');
+                if (location.protocol === 'file:') {
+                    if (status) status.textContent = 'Cannot fetch GeoJSON via file://. Please run a local server (e.g., python -m http.server) and open http://localhost:PORT/pages/main_dashboard.html';
+                }
+                const candidates = ['/or1.geojson', '/or1.json', '/public/or1.geojson', '/public/or1.json', '../or1.geojson', '../or1.json', '../public/or1.geojson', '../public/or1.json', './or1.geojson', './or1.json'];
+                if (status) status.textContent = 'Loading ' + candidates.join(' or ') + ' …';
+                let villagesText = null;
+                let usedPath = null;
+                for (const path of candidates) {
+                    try {
+                        const res = await fetch(path);
+                        if (res.ok) { villagesText = await res.text(); usedPath = path; break; }
+                    } catch (e) { console.warn('Fetch failed', path, e); }
+                }
+                if (!villagesText) {
+                    if (status) status.textContent = 'or1.geojson not found (tried root and public)';
+                    return null;
+                }
+                const villagesGeo = JSON.parse(villagesText);
+                villageLayer = L.geoJSON(villagesGeo, {
+                    pane: 'boundaryPane',
+                    style: { color: '#2563EB', weight: 1, fillColor: '#3B82F6', fillOpacity: 0.08 }
+                });
+                if (status) status.textContent = 'Loaded: ' + usedPath;
+            } catch (e) {
+                console.error('Village GeoJSON load failed', e);
+                const status = document.getElementById('boundaryStatus');
+                if (status) status.textContent = 'Failed to load or1.geojson';
+            }
+            return villageLayer;
+        }
+
+        // Show claim details with comprehensive DSS recommendations
+        function showClaimDetails(claimId) {
+            const claim = mockClaims.find(c => c.id === claimId);
+            if (!claim) return;
+
+            if (map && map.closePopup) {
+                try { map.closePopup(); } catch (e) {}
+            }
+
+            const detailsHtml = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Claim ID</label>
+                        <p class="font-medium text-text-primary">${claim.id}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Status</label>
+                        <p class="font-medium capitalize ${claim.status === 'approved' ? 'text-secondary-600' : claim.status === 'pending' ? 'text-warning' : 'text-accent-600'}">${claim.status}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Claimant</label>
+                        <p class="font-medium text-text-primary">${claim.claimant}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Tribal Group</label>
+                        <p class="font-medium text-text-primary">${claim.tribalGroup}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Village</label>
+                        <p class="font-medium text-text-primary">${claim.village}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">District</label>
+                        <p class="font-medium text-text-primary">${claim.district}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Area</label>
+                        <p class="font-medium text-text-primary">${claim.area}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-secondary uppercase tracking-wide">Date Submitted</label>
+                        <p class="font-medium text-text-primary">${claim.dateSubmitted}</p>
+                    </div>
+                </div>
+            `;
+
+            // Generate comprehensive DSS recommendations
+            const dss = claim.dssRecommendations;
+            const schemesHtml = `
+                <!-- DSS Priority Score -->
+                <div class="mb-4 p-3 bg-primary-50 rounded-lg border border-primary-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-text-primary">DSS Priority Score</span>
+                        <span class="text-lg font-semibold text-primary-600">${dss.priority}%</span>
+                </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-primary-600 h-2 rounded-full transition-all duration-300" style="width: ${dss.priority}%"></div>
+                    </div>
+                </div>
+
+                <!-- Multi-Criteria Analysis Dashboard -->
+                <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <h5 class="text-sm font-medium text-text-primary mb-3">Multi-Criteria Analysis</h5>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-2 bg-blue-50 rounded border border-blue-200">
+                            <div class="text-xs text-blue-600 font-medium">Water Index</div>
+                            <div class="text-sm font-semibold text-blue-700">${dss.waterIndex}%</div>
+                            <div class="w-full bg-blue-200 rounded-full h-1 mt-1">
+                                <div class="bg-blue-600 h-1 rounded-full" style="width: ${dss.waterIndex}%"></div>
+                            </div>
+                        </div>
+                        <div class="p-2 ${dss.vulnerability === 'High' ? 'bg-red-50 border-red-200' : dss.vulnerability === 'Medium' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'} rounded border">
+                            <div class="text-xs ${dss.vulnerability === 'High' ? 'text-red-600' : dss.vulnerability === 'Medium' ? 'text-yellow-600' : 'text-green-600'} font-medium">Vulnerability</div>
+                            <div class="text-sm font-semibold ${dss.vulnerability === 'High' ? 'text-red-700' : dss.vulnerability === 'Medium' ? 'text-yellow-700' : 'text-green-700'}">${dss.vulnerability}</div>
+                        </div>
+                        <div class="p-2 bg-green-50 rounded border border-green-200">
+                            <div class="text-xs text-green-600 font-medium">Socio-Economic</div>
+                            <div class="text-sm font-semibold text-green-700">${dss.socioEconomicScore}%</div>
+                            <div class="w-full bg-green-200 rounded-full h-1 mt-1">
+                                <div class="bg-green-600 h-1 rounded-full" style="width: ${dss.socioEconomicScore}%"></div>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-purple-50 rounded border border-purple-200">
+                            <div class="text-xs text-purple-600 font-medium">Forest Cover</div>
+                            <div class="text-sm font-semibold text-purple-700">${dss.forestCover}%</div>
+                            <div class="w-full bg-purple-200 rounded-full h-1 mt-1">
+                                <div class="bg-purple-600 h-1 rounded-full" style="width: ${dss.forestCover}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheme Eligibility Matrix -->
+                <div class="mb-4 p-3 bg-white rounded-lg border border-gray-200">
+                    <h5 class="text-sm font-medium text-text-primary mb-3">Scheme Eligibility Matrix</h5>
+                    <div class="space-y-2">
+                        ${Object.entries(dss.schemeEligibility).map(([scheme, data]) => `
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-text-primary">${scheme}</div>
+                                    <div class="text-xs text-text-secondary">${data.reason}</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-primary-600 h-2 rounded-full" style="width: ${data.score}%"></div>
+                                    </div>
+                                    <span class="text-xs font-medium text-text-primary">${data.score}%</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Scheme Recommendations -->
+                <div class="space-y-3">
+                    ${dss.recommendations.map(rec => `
+                        <div class="p-3 border border-border-light rounded-lg hover:shadow-sm transition-shadow">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1">
+                                    <h5 class="font-medium text-text-primary">${rec.scheme}</h5>
+                                    <p class="text-xs text-text-secondary">${rec.description}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded-full ${getStatusColor(rec.status)}">${rec.status}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">Priority:</span>
+                                <span class="text-xs font-medium ${getPriorityColor(rec.priority)}">${rec.priority}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">Amount:</span>
+                                <span class="text-xs font-medium text-text-primary">${rec.amount}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-text-secondary">Implementation:</span>
+                                <span class="text-xs font-medium text-text-primary">${rec.implementation}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 flex gap-2">
+                    <button class="flex-1 px-3 py-2 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition-colors">
+                        <i class="fas fa-download mr-1"></i>Export DSS Report
+                    </button>
+                    <button class="flex-1 px-3 py-2 border border-primary-600 text-primary-600 text-sm rounded hover:bg-primary-50 transition-colors">
+                        <i class="fas fa-share mr-1"></i>Share Recommendations
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('claimDetails').innerHTML = detailsHtml;
+            document.getElementById('schemeRecommendations').innerHTML = schemesHtml;
+            document.getElementById('claimModal').classList.remove('hidden');
+        }
+
+        // Navigate to claim location on map
+        function navigateToClaim(claimId) {
+            const claim = mockClaims.find(c => c.id === claimId);
+            if (!claim) return;
+
+            // Close any open popups
+            map.closePopup();
+            
+            // Pan to claim location with smooth animation
+            map.setView([claim.lat, claim.lng], 12, {
+                animate: true,
+                duration: 1.5
+            });
+            
+            // Open popup for the claim after animation
+            setTimeout(() => {
+                const marker = markersCluster.getLayers().find(layer => 
+                    layer.getLatLng().lat === claim.lat && layer.getLatLng().lng === claim.lng
+                );
+                if (marker) {
+                    marker.openPopup();
+                }
+            }, 1500);
+        }
+
+        // Helper functions for styling
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Active':
+                case 'Eligible':
+                case 'Completed':
+                    return 'bg-green-100 text-green-700';
+                case 'Recommended':
+                    return 'bg-blue-100 text-blue-700';
+                case 'In Progress':
+                    return 'bg-yellow-100 text-yellow-700';
+                case 'Pending Approval':
+                    return 'bg-orange-100 text-orange-700';
+                default:
+                    return 'bg-gray-100 text-gray-700';
+            }
+        }
+
+        function getPriorityColor(priority) {
+            switch(priority) {
+                case 'Critical':
+                case 'High':
+                    return 'text-red-600';
+                case 'Medium':
+                    return 'text-yellow-600';
+                case 'Low':
+                    return 'text-green-600';
+                default:
+                    return 'text-gray-600';
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize map
+            initMap();
+
+            // User menu toggle
+            document.getElementById('userMenuBtn').addEventListener('click', function() {
+                document.getElementById('userDropdown').classList.toggle('hidden');
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.toggle('hidden');
+            });
+
+            // Side panel toggle
+            document.getElementById('togglePanel').addEventListener('click', function() {
+                const panel = document.getElementById('sidePanel');
+                const icon = this.querySelector('i');
+                
+                if (panel.classList.contains('w-80')) {
+                    panel.classList.remove('w-80');
+                    panel.classList.add('w-16');
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    panel.classList.remove('w-16');
+                    panel.classList.add('w-80');
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-left');
+                }
+            });
+
+            // Close modal
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('claimModal').classList.add('hidden');
+            });
+
+            // Layer controls
+            document.getElementById('claimsLayer').addEventListener('change', function() {
+                if (this.checked) {
+                    map.addLayer(markersCluster);
+                } else {
+                    map.removeLayer(markersCluster);
+                }
+            });
+
+            document.getElementById('villageBoundaryLayerToggle').addEventListener('change', function() {
+                (async () => {
+                    if (this.checked) {
+                        await ensureVillageLayerLoaded();
+                        if (villageLayer) map.addLayer(villageLayer);
+                    } else {
+                        if (villageLayer) map.removeLayer(villageLayer);
+                    }
+                })();
+            });
+
+            const districtToggle = document.getElementById('districtBoundaryLayerToggle');
+            if (districtToggle) {
+                districtToggle.addEventListener('change', function() {
+                    (async () => {
+                        if (this.checked) {
+                            await ensureDistrictLayerLoaded();
+                            if (districtBoundaryLayer) map.addLayer(districtBoundaryLayer);
+                        } else {
+                            if (districtBoundaryLayer) map.removeLayer(districtBoundaryLayer);
+                        }
+                    })();
+                });
+            }
+
+            // Filter controls
+            const filters = ['stateFilter', 'districtFilter', 'villageFilter', 'tribalFilter'];
+            filters.forEach(filterId => {
+                document.getElementById(filterId).addEventListener('change', applyFilters);
+            });
+
+            // Clear filters
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                filters.forEach(filterId => {
+                    document.getElementById(filterId).value = '';
+                });
+                applyFilters();
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#userMenuBtn')) {
+                    document.getElementById('userDropdown').classList.add('hidden');
+                }
+            });
+        });
+
+        // Apply filters
+        function applyFilters() {
+            const state = document.getElementById('stateFilter').value;
+            const district = document.getElementById('districtFilter').value;
+            const village = document.getElementById('villageFilter').value;
+            const tribal = document.getElementById('tribalFilter').value;
+
+            let filteredClaims = mockClaims;
+
+            if (state) {
+                filteredClaims = filteredClaims.filter(claim => 
+                    claim.state.toLowerCase().replace(' ', '-') === state
+                );
+            }
+
+            if (district) {
+                filteredClaims = filteredClaims.filter(claim => 
+                    claim.district.toLowerCase() === district
+                );
+            }
+
+            if (village) {
+                filteredClaims = filteredClaims.filter(claim => 
+                    claim.village.toLowerCase() === village.replace('village', '').trim()
+                );
+            }
+
+            if (tribal) {
+                filteredClaims = filteredClaims.filter(claim => 
+                    claim.tribalGroup.toLowerCase() === tribal
+                );
+            }
+
+            // Update results count
+            document.getElementById('resultsCount').textContent = filteredClaims.length;
+
+            // Update map markers
+            markersCluster.clearLayers();
+            filteredClaims.forEach(claim => {
+                const marker = createClaimMarker(claim);
+                markersCluster.addLayer(marker);
+            });
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const user = localStorage.getItem('fraUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        // Initialize
+        checkAuth();
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

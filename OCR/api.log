@@ -1,0 +1,9 @@
+🚀 Starting FRA OCR API (Mock Mode)...
+📡 API will be available at: http://localhost:5000
+🛑 Press Ctrl+C to stop the server
+ℹ️  Note: Using mock OCR data for demonstration
+ * Serving Flask app 'minimal_ocr_api'
+ * Debug mode: on
+Address already in use
+Port 5000 is in use by another program. Either identify and stop that program, or start the server with a different port.
+On macOS, try disabling the 'AirPlay Receiver' service from System Preferences -> General -> AirDrop & Handoff.

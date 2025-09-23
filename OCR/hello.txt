@@ -1,0 +1,2 @@
+streamlit run ocr_app.py
+streamlit run fra_extractor_app.py

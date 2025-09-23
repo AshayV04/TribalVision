@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scheme Recommendations - FRA Atlas WebGIS</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-border-light sticky top-0 z-50">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo and Title -->
+                <div class="flex items-center gap-4">
+                    <div class="bg-primary-800 p-2 rounded-lg">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-sm text-text-secondary">Scheme Recommendations</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="main_dashboard.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Claims
+                    </a>
+                    <a href="ai_asset_mapping.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-satellite mr-2"></i>AI Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="text-primary-600 font-medium">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                    </a>
+                    <a href="village_analytics.html" class="text-text-secondary hover:text-primary-600 transition-colors">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 text-sm text-text-secondary">
+                        <i class="fas fa-shield-alt text-secondary-600"></i>
+                        <span>Secure Session</span>
+                    </div>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <i class="fas fa-chevron-down text-text-secondary text-xs"></i>
+                        </button>
+                        <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border-light hidden">
+                            <div class="p-3 border-b border-border-light">
+                                <p class="text-sm font-medium text-text-primary">Admin User</p>
+                                <p class="text-xs text-text-secondary">admin@fra.gov.in</p>
+                            </div>
+                            <a href="login.html" class="block px-3 py-2 text-sm text-text-secondary hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <!-- Page Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-semibold text-text-primary mb-2">AI-Powered Scheme Recommendations</h2>
+                    <p class="text-text-secondary">Decision support system for central scheme eligibility and intervention prioritization</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="exportBtn" class="btn-secondary flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Export Priority List
+                    </button>
+                    <button id="bulkEnrollBtn" class="btn-primary flex items-center gap-2">
+                        <i class="fas fa-users"></i>
+                        Bulk Enrollment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="floating-panel p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-text-secondary">Total FRA Holders</p>
+                            <p class="text-2xl font-semibold text-text-primary">2,847</p>
+                        </div>
+                        <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-primary-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-panel p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-text-secondary">High Priority</p>
+                            <p class="text-2xl font-semibold text-accent-600">456</p>
+                        </div>
+                        <div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-accent-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-panel p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-text-secondary">Eligible for Schemes</p>
+                            <p class="text-2xl font-semibold text-secondary-600">1,923</p>
+                        </div>
+                        <div class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-secondary-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-panel p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-text-secondary">Pending Documentation</p>
+                            <p class="text-2xl font-semibold text-warning">312</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-alt text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="floating-panel p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Scheme Type</label>
+                    <select id="schemeFilter" class="form-input w-full">
+                        <option value>All Schemes</option>
+                        <option value="dajgua">DAJGUA</option>
+                        <option value="pm-kisan">PM-KISAN</option>
+                        <option value="jal-shakti">Jal Shakti</option>
+                        <option value="fra-legal">FRA Legal Aid</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Priority Level</label>
+                    <select id="priorityFilter" class="form-input w-full">
+                        <option value>All Priorities</option>
+                        <option value="high">High Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">District</label>
+                    <select id="districtFilter" class="form-input w-full">
+                        <option value>All Districts</option>
+                        <option value="bastar">Bastar</option>
+                        <option value="dantewada">Dantewada</option>
+                        <option value="sukma">Sukma</option>
+                        <option value="bijapur">Bijapur</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Search</label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" class="form-input w-full pl-10" placeholder="Search FRA holders..." />
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+                <div class="flex items-center gap-2">
+                    <button id="resetFilters" class="text-sm text-primary-600 hover:text-primary-700 transition-colors">
+                        <i class="fas fa-undo mr-1"></i>Reset Filters
+                    </button>
+                </div>
+                <div class="text-sm text-text-secondary">
+                    Showing <span id="resultCount">2,847</span> results
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Recommendations Table -->
+            <div class="lg:col-span-2">
+                <div class="floating-panel">
+                    <div class="p-6 border-b border-border-light">
+                        <h3 class="text-lg font-semibold text-text-primary">FRA Holder Recommendations</h3>
+                        <p class="text-sm text-text-secondary mt-1">AI-powered eligibility analysis and priority scoring</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full data-table">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="text-left p-4 font-medium text-text-primary">
+                                        <button class="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                                            FRA Holder
+                                            <i class="fas fa-sort text-xs"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-left p-4 font-medium text-text-primary">
+                                        <button class="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                                            Location
+                                            <i class="fas fa-sort text-xs"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-left p-4 font-medium text-text-primary">Current Schemes</th>
+                                    <th class="text-left p-4 font-medium text-text-primary">Eligible Programs</th>
+                                    <th class="text-left p-4 font-medium text-text-primary">
+                                        <button class="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                                            Priority Score
+                                            <i class="fas fa-sort text-xs"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-left p-4 font-medium text-text-primary">Status</th>
+                                    <th class="text-left p-4 font-medium text-text-primary">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recommendationsTable">
+                                <!-- Table rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-border-light">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-text-secondary">
+                                Showing 1-10 of 2,847 results
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="px-3 py-1 text-sm border border-border-light rounded hover:bg-gray-50 transition-colors">
+                                    Previous
+                                </button>
+                                <button class="px-3 py-1 text-sm bg-primary-600 text-white rounded">1</button>
+                                <button class="px-3 py-1 text-sm border border-border-light rounded hover:bg-gray-50 transition-colors">2</button>
+                                <button class="px-3 py-1 text-sm border border-border-light rounded hover:bg-gray-50 transition-colors">3</button>
+                                <button class="px-3 py-1 text-sm border border-border-light rounded hover:bg-gray-50 transition-colors">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Panel -->
+            <div class="lg:col-span-1">
+                <div class="floating-panel">
+                    <div class="p-6 border-b border-border-light">
+                        <h3 class="text-lg font-semibold text-text-primary">Detailed Analysis</h3>
+                        <p class="text-sm text-text-secondary mt-1">Select a holder for eligibility review</p>
+                    </div>
+                    <div id="analysisContent" class="p-6">
+                        <!-- Default state -->
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-user-check text-2xl text-gray-400"></i>
+                            </div>
+                            <p class="text-text-secondary">Select an FRA holder from the table to view detailed eligibility analysis</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights Panel -->
+                <div class="floating-panel mt-6">
+                    <div class="p-6 border-b border-border-light">
+                        <h3 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+                            <i class="fas fa-brain text-primary-600"></i>
+                            AI Insights
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="bg-primary-50 p-4 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-lightbulb text-primary-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-text-primary mb-1">Priority Recommendation</h4>
+                                    <p class="text-sm text-text-secondary">Focus on high water-index areas with low agricultural coverage for maximum impact</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-secondary-50 p-4 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-chart-line text-secondary-600 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-text-primary mb-1">Trend Analysis</h4>
+                                    <p class="text-sm text-text-secondary">23% increase in scheme eligibility this quarter due to improved documentation</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-4 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-triangle text-warning mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-text-primary mb-1">Action Required</h4>
+                                    <p class="text-sm text-text-secondary">312 holders need documentation updates for scheme enrollment</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Enrollment Modal -->
+    <div id="bulkEnrollModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Bulk Scheme Enrollment</h3>
+                <button id="closeBulkModal" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Select Scheme</label>
+                    <select id="bulkSchemeSelect" class="form-input w-full">
+                        <option value>Choose scheme for enrollment</option>
+                        <option value="dajgua">DAJGUA - Development of Particularly Vulnerable Tribal Groups</option>
+                        <option value="pm-kisan">PM-KISAN - Pradhan Mantri Kisan Samman Nidhi</option>
+                        <option value="jal-shakti">Jal Shakti - Water Conservation and Management</option>
+                        <option value="fra-legal">FRA Legal Aid - Forest Rights Act Legal Support</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Priority Filter</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked /> High Priority (456)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked /> Medium Priority (892)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" /> Low Priority (1,499)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-text-primary mb-2">Enrollment Summary</h4>
+                    <div class="text-sm text-text-secondary space-y-1">
+                        <div class="flex justify-between">
+                            <span>Selected holders:</span>
+                            <span class="font-medium">1,348</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Eligible for selected scheme:</span>
+                            <span class="font-medium text-secondary-600">1,156</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Already enrolled:</span>
+                            <span class="font-medium text-warning">192</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2 mt-2">
+                            <span class="font-medium">New enrollments:</span>
+                            <span class="font-medium text-primary-600">964</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button id="cancelBulkEnroll" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirmBulkEnroll" class="flex-1 btn-primary">
+                        Process Enrollment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for recommendations table
+        const sampleData = [
+            {
+                id: 1,
+                name: "Ramesh Kumar Gond",
+                village: "Keshkal",
+                district: "Bastar",
+                currentSchemes: ["PM-KISAN"],
+                eligibleSchemes: ["DAJGUA", "Jal Shakti"],
+                priorityScore: 8.7,
+                priority: "high",
+                status: "eligible",
+                waterIndex: 0.3,
+                agriculturalPercentage: 65,
+                forestCoverage: 78
+            },
+            {
+                id: 2,
+                name: "Sunita Devi Korwa",
+                village: "Pharasgaon",
+                district: "Dantewada",
+                currentSchemes: ["FRA Legal Aid"],
+                eligibleSchemes: ["DAJGUA", "PM-KISAN", "Jal Shakti"],
+                priorityScore: 9.2,
+                priority: "high",
+                status: "documentation_pending",
+                waterIndex: 0.2,
+                agriculturalPercentage: 45,
+                forestCoverage: 85
+            },
+            {
+                id: 3,
+                name: "Bharat Singh Baiga",
+                village: "Kondagaon",
+                district: "Bastar",
+                currentSchemes: ["PM-KISAN", "Jal Shakti"],
+                eligibleSchemes: ["DAJGUA"],
+                priorityScore: 7.4,
+                priority: "medium",
+                status: "eligible",
+                waterIndex: 0.6,
+                agriculturalPercentage: 72,
+                forestCoverage: 62
+            },
+            {
+                id: 4,
+                name: "Kamala Bai Muria",
+                village: "Sukma",
+                district: "Sukma",
+                currentSchemes: [],
+                eligibleSchemes: ["DAJGUA", "PM-KISAN", "FRA Legal Aid"],
+                priorityScore: 8.9,
+                priority: "high",
+                status: "eligible",
+                waterIndex: 0.1,
+                agriculturalPercentage: 38,
+                forestCoverage: 92
+            },
+            {
+                id: 5,
+                name: "Devendra Halba",
+                village: "Bijapur",
+                district: "Bijapur",
+                currentSchemes: ["DAJGUA"],
+                eligibleSchemes: ["PM-KISAN", "Jal Shakti"],
+                priorityScore: 6.8,
+                priority: "medium",
+                status: "eligible",
+                waterIndex: 0.4,
+                agriculturalPercentage: 58,
+                forestCoverage: 71
+            }
+        ];
+
+        // Populate table
+        function populateTable(data = sampleData) {
+            const tbody = document.getElementById('recommendationsTable');
+            tbody.innerHTML = '';
+
+            data.forEach(holder => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors cursor-pointer';
+                row.onclick = () => showAnalysis(holder);
+
+                const priorityColor = holder.priority === 'high' ? 'text-accent-600' : 
+                                    holder.priority === 'medium' ? 'text-warning' : 'text-secondary-600';
+                
+                const statusBadge = holder.status === 'eligible' ? 
+                    '<span class="px-2 py-1 bg-secondary-100 text-secondary-700 rounded-full text-xs">Eligible</span>' :
+                    '<span class="px-2 py-1 bg-warning bg-opacity-20 text-warning rounded-full text-xs">Docs Pending</span>';
+
+                row.innerHTML = `
+                    <td class="p-4">
+                        <div>
+                            <div class="font-medium text-text-primary">${holder.name}</div>
+                            <div class="text-sm text-text-secondary">ID: FRA${holder.id.toString().padStart(4, '0')}</div>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-sm">
+                            <div class="text-text-primary">${holder.village}</div>
+                            <div class="text-text-secondary">${holder.district}</div>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${holder.currentSchemes.map(scheme => 
+                                `<span class="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs">${scheme}</span>`
+                            ).join('')}
+                            ${holder.currentSchemes.length === 0 ? '<span class="text-text-secondary text-sm">None</span>' : ''}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${holder.eligibleSchemes.map(scheme => 
+                                `<span class="px-2 py-1 bg-secondary-100 text-secondary-700 rounded text-xs">${scheme}</span>`
+                            ).join('')}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium ${priorityColor}">${holder.priorityScore}</span>
+                            <div class="w-16 h-2 bg-gray-200 rounded-full">
+                                <div class="h-2 rounded-full ${holder.priority === 'high' ? 'bg-accent-600' : 
+                                    holder.priority === 'medium' ? 'bg-warning' : 'bg-secondary-600'}" 
+                                    style="width: ${holder.priorityScore * 10}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <button class="text-primary-600 hover:text-primary-700 transition-colors" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-secondary-600 hover:text-secondary-700 transition-colors" title="Enroll">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Show detailed analysis
+        function showAnalysis(holder) {
+            const analysisContent = document.getElementById('analysisContent');
+            
+            const criteriaMatching = [
+                { criteria: "Land ownership verification", status: "completed", icon: "check-circle", color: "text-secondary-600" },
+                { criteria: "Income eligibility", status: "completed", icon: "check-circle", color: "text-secondary-600" },
+                { criteria: "Tribal community verification", status: "completed", icon: "check-circle", color: "text-secondary-600" },
+                { criteria: "Bank account linkage", status: holder.status === 'documentation_pending' ? "pending" : "completed", 
+                  icon: holder.status === 'documentation_pending' ? "clock" : "check-circle", 
+                  color: holder.status === 'documentation_pending' ? "text-warning" : "text-secondary-600" }
+            ];
+
+            analysisContent.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Holder Info -->
+                    <div class="border-b border-border-light pb-4">
+                        <h4 class="font-semibold text-text-primary mb-2">${holder.name}</h4>
+                        <div class="text-sm text-text-secondary space-y-1">
+                            <div><i class="fas fa-map-marker-alt mr-2"></i>${holder.village}, ${holder.district}</div>
+                            <div><i class="fas fa-id-card mr-2"></i>FRA${holder.id.toString().padStart(4, '0')}</div>
+                        </div>
+                    </div>
+
+                    <!-- Priority Score -->
+                    <div>
+                        <h5 class="font-medium text-text-primary mb-3">Priority Analysis</h5>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-text-secondary">Overall Score</span>
+                                <span class="font-semibold text-lg ${holder.priority === 'high' ? 'text-accent-600' : 
+                                    holder.priority === 'medium' ? 'text-warning' : 'text-secondary-600'}">${holder.priorityScore}/10</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Water Index</span>
+                                    <span>${holder.waterIndex}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-primary-600 h-2 rounded-full" style="width: ${holder.waterIndex * 100}%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Agricultural Coverage</span>
+                                    <span>${holder.agriculturalPercentage}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-secondary-600 h-2 rounded-full" style="width: ${holder.agriculturalPercentage}%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Forest Coverage</span>
+                                    <span>${holder.forestCoverage}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: ${holder.forestCoverage}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Criteria -->
+                    <div>
+                        <h5 class="font-medium text-text-primary mb-3">Eligibility Criteria</h5>
+                        <div class="space-y-2">
+                            ${criteriaMatching.map(criteria => `
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span class="text-sm text-text-secondary">${criteria.criteria}</span>
+                                    <i class="fas fa-${criteria.icon} ${criteria.color}"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Eligible Schemes -->
+                    <div>
+                        <h5 class="font-medium text-text-primary mb-3">Eligible Schemes</h5>
+                        <div class="space-y-2">
+                            ${holder.eligibleSchemes.map(scheme => `
+                                <div class="p-3 border border-border-light rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="font-medium text-text-primary">${scheme}</div>
+                                            <div class="text-xs text-text-secondary mt-1">
+                                                ${scheme === 'DAJGUA' ? 'Development support for tribal communities' :
+                                                  scheme === 'PM-KISAN' ? 'Direct income support for farmers' :
+                                                  scheme === 'Jal Shakti' ? 'Water conservation and management' :
+                                                  'Legal aid for forest rights'}
+                                            </div>
+                                        </div>
+                                        <button class="btn-primary text-xs px-2 py-1">
+                                            Enroll
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Implementation Timeline -->
+                    <div>
+                        <h5 class="font-medium text-text-primary mb-3">Implementation Timeline</h5>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Documentation Review</span>
+                                <span class="text-text-primary">2-3 days</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Verification Process</span>
+                                <span class="text-text-primary">5-7 days</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-text-secondary">Scheme Enrollment</span>
+                                <span class="text-text-primary">1-2 days</span>
+                            </div>
+                            <div class="flex justify-between font-medium border-t pt-2">
+                                <span class="text-text-primary">Total Timeline</span>
+                                <span class="text-primary-600">8-12 days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // User menu toggle
+        document.getElementById('userMenuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userMenu');
+            const btn = document.getElementById('userMenuBtn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Bulk enrollment modal
+        document.getElementById('bulkEnrollBtn').addEventListener('click', function() {
+            document.getElementById('bulkEnrollModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeBulkModal').addEventListener('click', function() {
+            document.getElementById('bulkEnrollModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelBulkEnroll').addEventListener('click', function() {
+            document.getElementById('bulkEnrollModal').classList.add('hidden');
+        });
+
+        document.getElementById('confirmBulkEnroll').addEventListener('click', function() {
+            alert('Bulk enrollment process initiated. You will receive a confirmation email shortly.');
+            document.getElementById('bulkEnrollModal').classList.add('hidden');
+        });
+
+        // Export functionality
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('Priority list export initiated. Download will begin shortly.');
+        });
+
+        // Filter functionality
+        function applyFilters() {
+            const schemeFilter = document.getElementById('schemeFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const districtFilter = document.getElementById('districtFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredData = sampleData.filter(holder => {
+                const matchesScheme = !schemeFilter || holder.eligibleSchemes.some(scheme => 
+                    scheme.toLowerCase().includes(schemeFilter.toLowerCase()));
+                const matchesPriority = !priorityFilter || holder.priority === priorityFilter;
+                const matchesDistrict = !districtFilter || holder.district.toLowerCase() === districtFilter.toLowerCase();
+                const matchesSearch = !searchInput || 
+                    holder.name.toLowerCase().includes(searchInput) ||
+                    holder.village.toLowerCase().includes(searchInput);
+
+                return matchesScheme && matchesPriority && matchesDistrict && matchesSearch;
+            });
+
+            populateTable(filteredData);
+            document.getElementById('resultCount').textContent = filteredData.length.toLocaleString();
+        }
+
+        // Add event listeners for filters
+        document.getElementById('schemeFilter').addEventListener('change', applyFilters);
+        document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+        document.getElementById('districtFilter').addEventListener('change', applyFilters);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+        // Reset filters
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('schemeFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            document.getElementById('districtFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            populateTable();
+            document.getElementById('resultCount').textContent = sampleData.length.toLocaleString();
+        });
+
+        // Initialize table
+        populateTable();
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
