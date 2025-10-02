@@ -487,7 +487,7 @@
                 <!-- Map Controls -->
                 <div class="absolute top-4 right-4 space-y-2" style="z-index: 1000;">
                     <!-- Layer Controls -->
-                    <div class="floating-panel p-3">
+                    <div class="floating-panel p-3" style="max-width: 260px; word-break: break-word;">
                         <h4 class="text-sm font-medium text-text-primary mb-2">Map Layers</h4>
                         <div class="space-y-2">
                             <label class="flex items-center gap-2 text-sm">
@@ -516,7 +516,7 @@
                     </div>
 
                     <!-- Legend -->
-                    <div class="floating-panel p-3">
+                    <div class="floating-panel p-3" style="max-width: 260px;">
                         <h4 class="text-sm font-medium text-text-primary mb-2">Legend</h4>
                         <div class="space-y-2 text-xs">
                             <div class="flex items-center gap-2">
@@ -1955,7 +1955,7 @@
                 const kmlCandidates = ['/odisha.kml', '/public/odisha.kml', '../odisha.kml', '../public/odisha.kml', './odisha.kml', './public/odisha.kml'];
                 let kmlText = null;
                 let usedPath = null;
-                if (status) status.textContent = 'Loading ' + kmlCandidates.join(' or ') + ' …';
+                if (status) status.textContent = 'Loading district boundaries…';
                 for (const p of kmlCandidates) {
                     try {
                         const res = await fetch(p);
@@ -1963,7 +1963,7 @@
                     } catch (e) { console.warn('Fetch failed', p, e); }
                 }
                 if (!kmlText) {
-                    if (status) status.textContent = 'odisha.kml not found (tried root and public)';
+                    if (status) status.textContent = 'District boundaries not found (odisha.kml)';
                     return null;
                 }
                 const kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
@@ -1973,14 +1973,17 @@
                         pane: 'boundaryPane',
                         style: { color: '#111827', weight: 1.5, fillColor: '#ffffff', fillOpacity: 0.05 }
                     });
-                    if (status) status.textContent = 'Loaded: ' + usedPath;
+                    if (status) {
+                        const label = usedPath ? usedPath.split('/').pop() : 'odisha.kml';
+                        status.textContent = `District boundaries loaded (${label})`;
+                    }
                 } else {
                     if (status) status.textContent = 'KML parser not available';
                 }
             } catch (e) {
                 console.error('District KML load failed', e);
                 const status = document.getElementById('boundaryStatus');
-                if (status) status.textContent = 'Failed to load odisha.kml';
+                if (status) status.textContent = 'Failed to load district boundaries';
             }
             return districtBoundaryLayer;
         }
@@ -1993,7 +1996,7 @@
                     if (status) status.textContent = 'Cannot fetch GeoJSON via file://. Please run a local server (e.g., python -m http.server) and open http://localhost:PORT/pages/main_dashboard.html';
                 }
                 const candidates = ['/or1.geojson', '/or1.json', '/public/or1.geojson', '/public/or1.json', '../or1.geojson', '../or1.json', '../public/or1.geojson', '../public/or1.json', './or1.geojson', './or1.json'];
-                if (status) status.textContent = 'Loading ' + candidates.join(' or ') + ' …';
+                if (status) status.textContent = 'Loading village boundaries…';
                 let villagesText = null;
                 let usedPath = null;
                 for (const path of candidates) {
@@ -2003,7 +2006,7 @@
                     } catch (e) { console.warn('Fetch failed', path, e); }
                 }
                 if (!villagesText) {
-                    if (status) status.textContent = 'or1.geojson not found (tried root and public)';
+                    if (status) status.textContent = 'Village boundaries not found (or1.geojson)';
                     return null;
                 }
                 const villagesGeo = JSON.parse(villagesText);
@@ -2011,11 +2014,14 @@
                     pane: 'boundaryPane',
                     style: { color: '#2563EB', weight: 1, fillColor: '#3B82F6', fillOpacity: 0.08 }
                 });
-                if (status) status.textContent = 'Loaded: ' + usedPath;
+                if (status) {
+                    const label = usedPath ? usedPath.split('/').pop() : 'or1.geojson';
+                    status.textContent = `Village boundaries loaded (${label})`;
+                }
             } catch (e) {
                 console.error('Village GeoJSON load failed', e);
                 const status = document.getElementById('boundaryStatus');
-                if (status) status.textContent = 'Failed to load or1.geojson';
+                if (status) status.textContent = 'Failed to load village boundaries';
             }
             return villageLayer;
         }
