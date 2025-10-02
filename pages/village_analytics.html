@@ -3,28 +3,218 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Village Analytics - FRA Atlas WebGIS</title>
+    <title>Village Analytics - TribalVision</title>
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* CHART CONTAINER FIX */
+        /* CHART CONTAINER FIX */
+        /* CHART CONTAINER FIX */
+        .h-64 {
+            height: 300px !important;
+            position: relative;  /* Ensures Chart.js can fit properly */
+        }
+
+        #trendsChart {
+            width: 100% !important;
+            height: 100% !important;
+}
+
+
+
+        canvas {
+            display: block !important;
+        }
+
+        /* Your existing styles... */
+        
+        /* Enhanced Layer Control Styles */
+        .enhanced-layer-control {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .layer-control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+        
+        .layer-control-header h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .layer-section {
+            margin-bottom: 16px;
+        }
+        
+        .layer-section h5 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .layer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .layer-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .layer-option:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .layer-option input[type="radio"],
+        .layer-option input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .layer-option span {
+            font-size: 12px;
+            color: #374151;
+            flex: 1;
+        }
+        
+        .opacity-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .opacity-controls label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        .opacity-controls input[type="range"] {
+            width: 80px;
+        }
+        
+        .custom-div-icon {
+            background: none;
+            border: none;
+            text-align: center;
+        }
+
+        #toggleLayerControl {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 14px;
+            box-shadow: 0 18px 30px -15px rgba(15, 23, 42, 0.4);
+            border: 1px solid #d1d5db;
+            padding: 0;
+        }
+
+        .leaflet-popup-tip {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+        }
+
+        .popup-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(15, 118, 110, 0.05));
+            border-radius: 14px;
+        }
+
+        .popup-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: #eef2ff;
+            color: #1e3a8a;
+        }
+
+        .popup-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .popup-meta {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .popup-desc {
+            font-size: 12px;
+            line-height: 1.45;
+            color: #4b5563;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(37, 99, 235, 0.08);
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+        </style>
+        
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
-<body class="bg-background min-h-screen">
+<body class="bg-background" style="height: 100vh;">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-border-light">
         <div class="px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo and Title -->
-                <div class="flex items-center gap-4">
-                    <div class="bg-primary-800 p-2 rounded-lg">
-                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                <div class="flex items-center">
+                    <div class="bg-800 p-1 rounded-lg mr-1">
+                        <img src="../TribalVision Logo.png" alt="TribalVision logo" class="logo-mark" style="height: 90px; width: 110px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));" />
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-lg font-semibold text-primary-700 tracking-wide ">TribalVision</p>
                         <p class="text-sm text-text-secondary">Village Analytics Dashboard</p>
                     </div>
                 </div>
@@ -419,11 +609,18 @@
 
     <script>
         // Initialize map
+        
+
         let villageMap;
-        let trendsChart;
+        let baseLayers = {};
+        let overlayLayers = {};
+        let layerControl;
+        let trendsChart; // Keep your existing variable
+
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeMap();
+            createEnhancedLayerControl();
             initializeChart();
             setupEventListeners();
         });
@@ -431,75 +628,404 @@
         function initializeMap() {
             // Initialize Leaflet map
             villageMap = L.map('villageMap').setView([22.5726, 78.9629], 10);
+
+            // ============================================================================
+            // BASE LAYERS (Background maps)
+            // ============================================================================
             
-            // Add tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(villageMap);
-
-            // Add sample markers for FRA claims
-            const sampleClaims = [
-                {lat: 22.5726, lng: 78.9629, title: "Claim #001", status: "Approved"},
-                {lat: 22.5826, lng: 78.9729, title: "Claim #002", status: "Pending"},
-                {lat: 22.5626, lng: 78.9529, title: "Claim #003", status: "Approved"}
-            ];
-
-            sampleClaims.forEach(claim => {
-                const marker = L.marker([claim.lat, claim.lng]).addTo(villageMap);
-                marker.bindPopup(`<b>${claim.title}</b><br>Status: ${claim.status}`);
+            // 1. OpenStreetMap (Default)
+            baseLayers['Street Map'] = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
             });
 
-            // Add village boundary (sample polygon)
-            const villageBoundary = L.polygon([
-                [22.5626, 78.9429],
-                [22.5826, 78.9429],
-                [22.5826, 78.9829],
-                [22.5626, 78.9829]
-            ], {
-                color: '#1E40AF',
-                fillColor: '#3B82F6',
-                fillOpacity: 0.2
+            // 2. Satellite Imagery
+            baseLayers['Satellite'] = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                attribution: '© Google',
+                maxZoom: 20
+            });
+
+            // 3. Hybrid (Satellite with labels)
+            baseLayers['Hybrid'] = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                attribution: '© Google',
+                maxZoom: 20
+            });
+
+            // 4. Terrain
+            baseLayers['Terrain'] = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+                attribution: '© Google',
+                maxZoom: 15
+            });
+
+            // 5. Topographic
+            baseLayers['Topographic'] = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
+                maxZoom: 17
+            });
+
+            // 6. Esri Satellite
+            baseLayers['Esri Satellite'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri',
+                maxZoom: 19
+            });
+
+            // ============================================================================
+            // OVERLAY LAYERS (Data layers)
+            // ============================================================================
+
+            // 1. Bhuvan Land Use/Land Cover
+            overlayLayers['Land Use (Bhuvan)'] = L.tileLayer.wms('https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms', {
+                layers: 'lulc:OR_LULC50K_1516',
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.7,
+                attribution: '© NRSC/ISRO Bhuvan'
+            });
+
+            // 2. Forest Cover
+            overlayLayers['Forest Cover'] = L.tileLayer.wms('https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms', {
+                layers: 'forest:forest_cover_2019',
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.8,
+                attribution: '© NRSC/ISRO'
+            });
+
+            // 3. Village Boundaries Layer
+            overlayLayers['Village Boundaries'] = L.layerGroup();
+            
+            // 4. FRA Claims Layer
+            overlayLayers['FRA Claims'] = L.layerGroup();
+            
+            // 5. Infrastructure Layer
+            overlayLayers['Infrastructure'] = L.layerGroup();
+
+            // 6. Water Bodies
+            overlayLayers['Water Bodies'] = L.tileLayer.wms('https://bhuvan-vec1.nrsc.gov.in/bhuvan/wms', {
+                layers: 'waterbodies:water_bodies_2018',
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.6,
+                attribution: '© NRSC/ISRO'
+            });
+
+            // Set default base layer
+            baseLayers['Street Map'].addTo(villageMap);
+
+            // Add sample data to layers
+            addSampleData();
+
+            // Add layer control
+            layerControl = L.control.layers(baseLayers, overlayLayers, {
+                position: 'topright',
+                collapsed: false
             }).addTo(villageMap);
 
-            villageBoundary.bindPopup("Khairwani Village Boundary");
+            console.log('Map initialized with full layer system');
         }
 
+        function createEnhancedLayerControl() {
+            // If a custom UI isn't present, fall back to Leaflet's default control
+            const container = document.querySelector('.enhanced-layer-control');
+
+            if (!container) {
+                console.warn('Enhanced layer control container not found; using default Leaflet control');
+                return;
+            }
+
+            container.innerHTML = '';
+
+            const baseSection = document.createElement('div');
+            baseSection.className = 'layer-section';
+            baseSection.innerHTML = '<h5>Base Layers</h5>';
+
+            Object.keys(baseLayers).forEach((baseName, index) => {
+                const option = document.createElement('label');
+                option.className = 'layer-option';
+
+                option.innerHTML = `
+                    <input type="radio" name="base-layer" value="${baseName}" ${index === 0 ? 'checked' : ''}>
+                    <span>${baseName}</span>
+                `;
+
+                option.querySelector('input').addEventListener('change', () => {
+                    Object.keys(baseLayers).forEach(name => {
+                        if (villageMap.hasLayer(baseLayers[name])) {
+                            villageMap.removeLayer(baseLayers[name]);
+                        }
+                    });
+                    baseLayers[baseName].addTo(villageMap);
+                });
+
+                baseSection.appendChild(option);
+            });
+
+            const overlaySection = document.createElement('div');
+            overlaySection.className = 'layer-section';
+            overlaySection.innerHTML = '<h5>Overlays</h5>';
+
+            Object.keys(overlayLayers).forEach((overlayName) => {
+                const option = document.createElement('label');
+                option.className = 'layer-option';
+
+                const isVisible = villageMap.hasLayer(overlayLayers[overlayName]);
+
+                option.innerHTML = `
+                    <input type="checkbox" value="${overlayName}" ${isVisible ? 'checked' : ''}>
+                    <span>${overlayName}</span>
+                `;
+
+                option.querySelector('input').addEventListener('change', (event) => {
+                    if (event.target.checked) {
+                        overlayLayers[overlayName].addTo(villageMap);
+                    } else {
+                        villageMap.removeLayer(overlayLayers[overlayName]);
+                    }
+                });
+
+                overlaySection.appendChild(option);
+            });
+
+            container.appendChild(baseSection);
+            container.appendChild(overlaySection);
+
+            console.log('Enhanced layer control initialized');
+        }
+
+function addSampleData() {
+    // Add FRA claims markers
+    const sampleClaims = [
+        { lat: 22.5726, lng: 78.9629, title: 'Claim 001', status: 'Approved', household: 'Gond Family', area: '2.1 ha' },
+        { lat: 22.5782, lng: 78.9685, title: 'Claim 002', status: 'Pending', household: 'Munda Family', area: '1.6 ha' },
+        { lat: 22.5698, lng: 78.9554, title: 'Claim 003', status: 'Approved', household: 'Baiga Community', area: '3.0 ha' },
+        { lat: 22.5745, lng: 78.9472, title: 'Claim 004', status: 'Under Review', household: 'Korku Family', area: '1.2 ha' },
+        { lat: 22.5820, lng: 78.9595, title: 'Claim 005', status: 'Approved', household: 'Halba Family', area: '2.4 ha' },
+        { lat: 22.5662, lng: 78.9721, title: 'Claim 006', status: 'In Appeal', household: 'Bhil Family', area: '1.8 ha' },
+        { lat: 22.5608, lng: 78.9633, title: 'Claim 007', status: 'Rejected', household: 'Pardhan Community', area: '0.9 ha' },
+        { lat: 22.5857, lng: 78.9736, title: 'Claim 008', status: 'Pending', household: 'Kol Family', area: '2.7 ha' },
+        { lat: 22.5590, lng: 78.9498, title: 'Claim 009', status: 'Approved', household: 'Gond Community', area: '3.4 ha' }
+    ];
+
+    const statusColors = {
+        'Approved': '#16a34a',
+        'Pending': '#f97316',
+        'Under Review': '#facc15',
+        'In Appeal': '#2563eb',
+        'Rejected': '#dc2626'
+    };
+
+    sampleClaims.forEach(claim => {
+        const statusColor = statusColors[claim.status] || '#6b7280';
+        const pillBackground = `${statusColor}20`;
+        const marker = L.circleMarker([claim.lat, claim.lng], {
+            radius: 8,
+            color: '#ffffff',
+            weight: 2,
+            fillColor: statusColor,
+            fillOpacity: 0.9
+        });
+        marker.bindPopup(`
+            <div class="popup-card">
+                <div class="popup-icon">📄</div>
+                <div>
+                    <div class="status-pill" style="color:${statusColor};border:1px solid ${statusColor};background:${pillBackground};">${claim.status}</div>
+                    <div class="popup-title">${claim.title}</div>
+                    <div class="popup-desc"><strong>Household:</strong> ${claim.household}<br><strong>Area:</strong> ${claim.area}</div>
+                </div>
+            </div>
+        `);
+        overlayLayers['FRA Claims'].addLayer(marker);
+    });
+
+    // Add village boundary
+    const villageBoundary = L.polygon([
+        [22.5655, 78.9480],
+        [22.5718, 78.9385],
+        [22.5804, 78.9427],
+        [22.5862, 78.9544],
+        [22.5839, 78.9689],
+        [22.5756, 78.9798],
+        [22.5662, 78.9751],
+        [22.5609, 78.9635],
+        [22.5627, 78.9524]
+    ], {
+        color: '#1E3A8A',
+        weight: 3,
+        dashArray: '8 4',
+        fillColor: '#3B82F6',
+        fillOpacity: 0.25
+    });
+    villageBoundary.bindPopup('Khairwani Village Boundary');
+    overlayLayers['Village Boundaries'].addLayer(villageBoundary);
+
+    const balangirBoundary = L.polygon([
+        [20.7135, 83.4750],
+        [20.7210, 83.4828],
+        [20.7248, 83.4942],
+        [20.7182, 83.5055],
+        [20.7081, 83.5079],
+        [20.7016, 83.4970],
+        [20.7047, 83.4824]
+    ], {
+        color: '#0f766e',
+        weight: 3,
+        dashArray: '6 4',
+        fillColor: '#14b8a6',
+        fillOpacity: 0.22
+    });
+    balangirBoundary.bindPopup(`
+        <div class="popup-card">
+            <div class="popup-icon">🗺️</div>
+            <div>
+                <div class="popup-meta">Balangir, Odisha</div>
+                <div class="popup-title">Village Boundary - Bhainsa Sahi Cluster</div>
+                <div class="popup-desc">Emerging peri-urban village cluster adjoining Balangir town with planned infrastructure upgrades.</div>
+            </div>
+        </div>
+    `);
+    overlayLayers['Village Boundaries'].addLayer(balangirBoundary);
+
+    // Add infrastructure
+    const infrastructureData = [
+        { lat: 22.5750, lng: 78.9650, type: 'Hospital', name: 'PHC Khairwani', services: 'Primary healthcare & maternal care' },
+        { lat: 22.5700, lng: 78.9600, type: 'School', name: 'Primary School', services: 'Classes I-V & midday meal' },
+        { lat: 22.5800, lng: 78.9700, type: 'Post Office', name: 'Khairwani PO', services: 'Postal & banking services' },
+        { lat: 22.5685, lng: 78.9530, type: 'Water Tank', name: 'Gram Panchayat Tank', services: '24KL storage with piped supply' },
+        { lat: 22.5832, lng: 78.9638, type: 'Anganwadi Center', name: 'Bal Vikas Kendra', services: 'Nutrition & early learning' },
+        { lat: 22.5714, lng: 78.9755, type: 'Community Center', name: 'Samudayik Bhavan', services: 'Meetings & SHG training' },
+        { lat: 22.5642, lng: 78.9576, type: 'Solar Microgrid', name: 'Solar Power Hub', services: '35 kW village microgrid' },
+        { lat: 22.5771, lng: 78.9485, type: 'Weekly Market', name: 'Haat Bazaar', services: 'Saturday agri-trade hub' },
+        { lat: 22.5733, lng: 78.9812, type: 'Digital Service Center', name: 'CSC e-Seva Kendra', services: 'Aadhaar updates & e-governance services' },
+        { lat: 22.5619, lng: 78.9558, type: 'Cold Storage', name: 'Farm Produce Hub', services: '15 MT cold chain for perishables' },
+        { lat: 22.5865, lng: 78.9604, type: 'Irrigation Pump House', name: 'Lift Irrigation Point', services: 'River-fed irrigation covering 60 ha' },
+        { lat: 22.5674, lng: 78.9421, type: 'Forest Watch Tower', name: 'Jungle Suraksha Post', services: 'Community-led forest vigilance' },
+        { lat: 20.7162, lng: 83.4855, type: 'District Hospital', name: 'Balangir District Hospital Wing', services: 'Tele-ICU, maternal & newborn care expansion' },
+        { lat: 20.7215, lng: 83.4920, type: 'Agri Hub', name: 'Balangir Krushi Bazaar Yard', services: 'Cold-chain and e-NAM farmer aggregation hub' },
+        { lat: 20.7113, lng: 83.4746, type: 'Solar Water Pump', name: 'Saheed Nagar Solar Pumps', services: '24x7 drinking water via solar-powered pumps' },
+        { lat: 20.7240, lng: 83.4998, type: 'Skill Center', name: 'Rajendra College Skill Lab', services: 'Digital skilling and tribal artisan incubation' }
+    ];
+
+    const infrastructureIcons = {
+        'Hospital': '🏥',
+        'School': '🏫',
+        'Post Office': '📮',
+        'Water Tank': '🚰',
+        'Anganwadi Center': '👶',
+        'Community Center': '🏡',
+        'Solar Microgrid': '🔆',
+        'Weekly Market': '🛒',
+        'Digital Service Center': '💻',
+        'Cold Storage': '❄️',
+        'Irrigation Pump House': '🚜',
+        'Forest Watch Tower': '🛖',
+        'District Hospital': '🏥',
+        'Agri Hub': '🌾',
+        'Solar Water Pump': '💧',
+        'Skill Center': '🎓'
+    };
+
+    infrastructureData.forEach(infra => {
+        const icon = infrastructureIcons[infra.type] || '📍';
+
+        const marker = L.marker([infra.lat, infra.lng], {
+            icon: L.divIcon({
+                html: `<div style="font-size: 20px;">${icon}</div>`,
+                className: 'custom-div-icon',
+                iconSize: [25, 25],
+                iconAnchor: [12, 12]
+            })
+        });
+        marker.bindPopup(`
+            <div class="popup-card">
+                <div class="popup-icon">${icon}</div>
+                <div>
+                    <div class="popup-meta">${infra.type}</div>
+                    <div class="popup-title">${infra.name}</div>
+                    <div class="popup-desc">${infra.services}</div>
+                </div>
+            </div>
+        `);
+        overlayLayers['Infrastructure'].addLayer(marker);
+    });
+
+    // Add default layers to map
+    overlayLayers['Village Boundaries'].addTo(villageMap);
+    overlayLayers['FRA Claims'].addTo(villageMap);
+}
+
+
         function initializeChart() {
-            const ctx = document.getElementById('trendsChart').getContext('2d');
+            const canvas = document.getElementById('trendsChart');
+            if (!canvas) {
+                console.error('❌ Chart canvas not found in DOM');
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            console.log('Chart canvas:', canvas, 'Context:', ctx);
+
+
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+
             trendsChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'FRA Claims Processed',
-                        data: [12, 19, 15, 25, 22, 30],
-                        borderColor: '#1E40AF',
-                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Scheme Enrollments',
-                        data: [8, 15, 12, 18, 16, 24],
-                        borderColor: '#059669',
-                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                        tension: 0.4
-                    }]
+                    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                    datasets: [
+                        {
+                            label: 'FRA Claims Processed',
+                            data: [12,19,15,25,22,30,28,35,32,40,38,45],
+                            borderColor: '#1E40AF',
+                            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Scheme Enrollments',
+                            data: [8,15,12,18,16,24,22,28,26,32,30,36],
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5,150,105,0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Infrastructure Projects',
+                            data: [3,5,4,7,6,9,8,11,10,13,12,15],
+                            borderColor: '#DC2626',
+                            backgroundColor: 'rgba(220,38,38,0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'top',
+                        legend: { position: 'top' },
+                        title: {
+                            display: true,
+                            text: 'Monthly Development Progress',
+                            font: { size: 14, weight: 'bold' },
+                            color: '#374151'
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                        x: { grid: { color: 'rgba(0,0,0,0.1)' } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } }
                     }
                 }
             });
+
+            console.log('✅ Trends chart initialized successfully');
         }
+
+
 
         function setupEventListeners() {
             // Village selection change
@@ -581,7 +1107,11 @@
             const nav = document.querySelector('nav');
             nav.classList.toggle('hidden');
         }
+        
+
     </script>
+
+
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

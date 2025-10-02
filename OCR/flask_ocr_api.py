@@ -9,6 +9,7 @@ import io
 import sys
 import re
 
+
 # Fix numpy import issue by removing current directory from path
 current_dir = os.getcwd()
 if current_dir in sys.path:
@@ -34,7 +35,13 @@ else:  # Linux/Mac
     # Default paths for Linux/Mac
     pass
 
-DB_FILE = "fra_claims.db"
+import os
+
+DB_FILE = os.path.join(os.path.dirname(__file__), "fra_claims.db")
+print("Using database:", DB_FILE)
+
+
+
 POPPLER_PATH = None
 
 # ----------------- Gemini API -----------------
@@ -73,17 +80,25 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_to_db(record: Dict):
+def save_to_db(record):
     conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
-    keys = list(record.keys())
-    placeholders = ", ".join(["?"] * len(keys))
-    cols = ", ".join(keys)
-    values = [record[k] for k in keys]
-    sql = f"INSERT INTO fra_claim_individual ({cols}) VALUES ({placeholders})"
-    cur.execute(sql, values)
+    cur.execute("""
+        INSERT INTO fra_claim_individual (
+            source_filename, claimant_name, spouse_name, father_or_mother_name,
+            address, village, gram_panchayat, tehsil_taluka, district, state,
+            is_scheduled_tribe, is_otfd, land_area, raw_text, ocr_confidence, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        record["source_filename"], record["claimant_name"], record["spouse_name"],
+        record["father_or_mother_name"], record["address"], record["village"],
+        record["gram_panchayat"], record["tehsil_taluka"], record["district"], record["state"],
+        record["is_scheduled_tribe"], record["is_otfd"], record["land_area"],
+        record["raw_text"], record["ocr_confidence"], record["status"]
+    ))
     conn.commit()
     conn.close()
+
 
 def get_claims():
     conn = sqlite3.connect(DB_FILE)
@@ -455,8 +470,9 @@ def upload_document():
 def save_claim():
     try:
         data = request.get_json()
+        print("Incoming JSON:", data)   # <-- moved after parsing JSON
         
-        # Prepare record for database
+        # Build dict, not set
         record = {
             "source_filename": data.get("filename", ""),
             "claimant_name": data.get("claimant_name", ""),
@@ -475,14 +491,16 @@ def save_claim():
             "ocr_confidence": data.get("confidence", 0.0),
             "status": "pending_review"
         }
-        
-        # Save to database
+
         save_to_db(record)
-        
         return jsonify({"message": "Claim saved successfully", "status": "success"})
-        
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": f"Failed to save claim: {str(e)}"}), 500
+
+
 
 @app.route('/api/claims', methods=['GET'])
 def get_claims_api():
@@ -531,6 +549,19 @@ def update_claim_status(claim_id):
     except Exception as e:
         return jsonify({"error": f"Failed to update status: {str(e)}"}), 500
 
-if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+@app.route('/api/claims/<int:claim_id>', methods=['DELETE'])
+def delete_claim(claim_id):
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM fra_claim_individual WHERE id = ?", (claim_id,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"message": "Claim deleted successfully", "status": "success"})
+    except Exception as e:
+        return jsonify({"error": f"Failed to delete claim: {str(e)}"}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5002, debug=False)
+

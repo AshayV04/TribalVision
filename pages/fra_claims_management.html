@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FRA Claims Management - FRA Atlas WebGIS</title>
+    <title>FRA Claims Management - TribalVision</title>
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
-<body class="bg-background min-h-screen">
+<body class="bg-background" style="height: 100vh;">
     <!-- Header -->
     <header class="bg-white shadow-md border-b border-border-light">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-6">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo and Title -->
                 <div class="flex items-center">
-                    <div class="bg-primary-800 p-2 rounded-lg mr-3">
-                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                    <div class="bg-800 p-1 rounded-lg mr-1">
+                        <img src="../TribalVision Logo.png" alt="TribalVision logo" class="logo-mark" style="height: 90px; width: 110px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));" />
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-lg font-semibold text-primary-700 tracking-wide ">TribalVision</p>
                         <p class="text-sm text-text-secondary">Claims Management System</p>
                     </div>
                 </div>
@@ -1070,7 +1068,7 @@
         // Load claims from API
         async function loadClaims() {
             try {
-                const response = await fetch('http://localhost:5001/api/claims');
+                const response = await fetch('http://localhost:5002/api/claims');
                 if (response.ok) {
                     const data = await response.json();
                     updateClaimsTable(data.claims);
@@ -1214,7 +1212,7 @@
 
         async function deleteClaim(claimId) {
             try {
-                const response = await fetch(`http://localhost:5001/api/claims/${claimId}`, {
+                const response = await fetch(`http://localhost:5002/api/claims/${claimId}`, {
                     method: 'DELETE'
                 });
 

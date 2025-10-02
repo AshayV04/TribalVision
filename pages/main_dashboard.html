@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Main Dashboard - FRA Atlas WebGIS</title>
+    <title>Main Dashboard - TribalVision</title>
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -12,6 +12,44 @@
     
     <!-- Custom Popup Styles -->
     <style>
+        
+/* Fix for gray space at bottom */
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Remove min-h-screen from body and make it full height */
+        body.bg-background {
+            height: 100vh !important;
+            min-height: unset !important;
+        }
+
+        /* Main dashboard container fix */
+        .flex.h-screen.pt-20 {
+            height: calc(100vh - 80px) !important;
+            padding-top: 0 !important;
+        }
+
+        /* Map container should fill all available space */
+        #map {
+            height: 100% !important;
+            min-height: 400px;
+        }
+
+        /* Side panel height adjustment */
+        #sidePanel {
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        /* Map container adjustments */
+        .flex-1.flex.flex-col {
+            height: calc(100vh - 80px);
+        }
+
         .leaflet-popup-content-wrapper {
             background: transparent !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
@@ -19,7 +57,40 @@
             padding: 0 !important;
             overflow: hidden !important;
         }
-        
+        #map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 18px;
+            color: #333;
+            box-shadow: 0 0 5px rgba(0,0,0,0.4);
+            z-index: 1200; 
+            }
+
+            #map-legend h4 {
+            margin: 0 0 5px;
+            font-weight: bold;
+            }
+
+            #map-legend div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            }
+
+            #map-legend span {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            border: 1px solid #000;
+            }
+
         .leaflet-popup-content {
             margin: 0 !important;
             padding: 0 !important;
@@ -106,20 +177,18 @@
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
-<body class="bg-background min-h-screen">
+<body class="bg-background" style="height: 100vh;">
     <!-- Header -->
     <header class="bg-white shadow-md border-b border-border-light">
         <div class="px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo and Title -->
-                <div class="flex items-center gap-4">
-                    <div class="bg-primary-800 p-2 rounded-lg">
-                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                <div class="flex items-center">
+                    <div class="bg-800 p-1 rounded-lg mr-1">
+                        <img src="../TribalVision Logo.png" alt="TribalVision logo" class="logo-mark" style="height: 90px; width: 110px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));" />
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
+                        <p class="text-lg font-semibold text-primary-700 tracking-wide ">TribalVision</p>
                         <p class="text-sm text-text-secondary">Main Dashboard</p>
                     </div>
                 </div>
@@ -236,7 +305,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-xs text-text-secondary uppercase tracking-wide">Total Claims</p>
-                                <p class="text-2xl font-semibold text-text-primary">18</p>
+                                <p class="text-2xl font-semibold text-text-primary">256</p>
                             </div>
                             <div class="bg-primary-100 p-2 rounded-lg">
                                 <i class="fas fa-file-alt text-primary-600"></i>
@@ -249,7 +318,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-xs text-text-secondary uppercase tracking-wide">Approved</p>
-                                <p class="text-2xl font-semibold text-secondary-600">11</p>
+                                <p class="text-2xl font-semibold text-secondary-600">132</p>
                             </div>
                             <div class="bg-secondary-100 p-2 rounded-lg">
                                 <i class="fas fa-check-circle text-secondary-600"></i>
@@ -262,7 +331,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-xs text-text-secondary uppercase tracking-wide">Pending</p>
-                                <p class="text-2xl font-semibold text-warning">5</p>
+                                <p class="text-2xl font-semibold text-warning">124</p>
                             </div>
                             <div class="bg-yellow-100 p-2 rounded-lg">
                                 <i class="fas fa-clock text-warning"></i>
@@ -400,6 +469,20 @@
             <!-- Map -->
             <div class="flex-1 relative">
                 <div id="map" class="w-full h-full"></div>
+                
+                    
+                  
+                    <!-- Legend -->
+                    <div id="map-legend">
+                      <h4>Land Use Legend</h4>
+                      <div><span style="background:#1a9850;"></span> Forest</div>
+                      <div><span style="background:#d73027;"></span> Agriculture</div>
+                      <div><span style="background:#fee08b;"></span> Barren Land</div>
+                      <div><span style="background:#91bfdb;"></span> Water Bodies</div>
+                      <div><span style="background:#cccccc;"></span> Settlements</div>
+                    </div>
+                  </body>
+                  
 
                 <!-- Map Controls -->
                 <div class="absolute top-4 right-4 space-y-2" style="z-index: 1000;">
@@ -420,13 +503,14 @@
                                 <span>District Boundaries</span>
                             </label>
                             <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" id="landUseLayer" class="rounded text-primary-600" />
-                                <span>Land Use</span>
+                                <input type="checkbox" id="lulcLayerToggle" class="rounded text-primary-600">
+                                <span>Land use</span>
                             </label>
                             <label class="flex items-center gap-2 text-sm">
                                 <input type="checkbox" id="infrastructureLayer" class="rounded text-primary-600" />
                                 <span>Infrastructure</span>
                             </label>
+                            
                             <div id="boundaryStatus" class="text-xs text-text-secondary"></div>
                         </div>
                     </div>
@@ -1593,6 +1677,8 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
+            
+
 
             // Panes for layering to avoid overlap
             map.createPane('boundaryPane');
@@ -1934,7 +2020,94 @@
             return villageLayer;
         }
 
-        // Show claim details with comprehensive DSS recommendations
+       
+
+// Function to load Bhuvan LULC layer with corrected parameters
+// Declare the variable at the top level (place this with other global variables)
+        let lulcLayer;
+
+        // Function to load Bhuvan LULC layer
+        async function loadBhuvanLULCLayer() {
+            if (lulcLayer) return lulcLayer;
+            
+            try {
+                // Create the WMS layer with corrected parameters
+                lulcLayer = L.tileLayer.wms("https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms", {
+                    layers: 'lulc:OR_LULC50K_1516',  // Correct Odisha LULC layer name
+                    format: 'image/png',
+                    transparent: true,
+                    version: '1.1.1',
+                    crs: L.CRS.EPSG4326,
+                    opacity: 0.7,
+                    attribution: '© NRSC/ISRO Bhuvan',
+                    timeout: 10000
+                });
+                
+                // Add event listeners for debugging
+                lulcLayer.on('tileerror', function(e) {
+                    console.warn('LULC tile failed to load:', e.tile.src);
+                    const statusElement = document.getElementById('boundaryStatus');
+                    if (statusElement) {
+                        statusElement.textContent = 'Some land use tiles failed to load';
+                    }
+                });
+                
+                lulcLayer.on('tileload', function() {
+                    console.log('LULC tile loaded successfully');
+                });
+                
+                console.log('LULC layer created successfully');
+                return lulcLayer;
+                
+            } catch (error) {
+                console.error('Error creating LULC layer:', error);
+                return null;
+            }
+        }
+
+        // REMOVE ALL EXISTING EVENT LISTENERS FOR lulcLayerToggle AND REPLACE WITH THIS:
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleElement = document.getElementById('lulcLayerToggle');
+            
+            if (!toggleElement) {
+                console.error('Land use toggle element not found');
+                return;
+            }
+            
+            toggleElement.addEventListener('change', async function() {
+                console.log('Land use toggle clicked, checked:', this.checked);
+                const statusElement = document.getElementById('boundaryStatus');
+                
+                if (this.checked) {
+                    try {
+                        if (statusElement) statusElement.textContent = 'Loading land use layer...';
+                        console.log('Loading land use layer...');
+                        
+                        await loadBhuvanLULCLayer();
+                        
+                        if (lulcLayer && map) {
+                            map.addLayer(lulcLayer);
+                            console.log('LULC layer added to map');
+                            if (statusElement) statusElement.textContent = 'Land use layer loaded';
+                        } else {
+                            console.error('Failed to create LULC layer or map not available');
+                            if (statusElement) statusElement.textContent = 'Failed to load land use layer - server may be unavailable';
+                        }
+                    } catch (error) {
+                        console.error('Error in LULC toggle:', error);
+                        if (statusElement) statusElement.textContent = 'Error loading land use layer';
+                    }
+                } else {
+                    if (lulcLayer && map && map.hasLayer(lulcLayer)) {
+                        map.removeLayer(lulcLayer);
+                        console.log('LULC layer removed from map');
+                        if (statusElement) statusElement.textContent = 'Land use layer hidden';
+                    }
+                }
+            });
+        });
+
+// Show claim details with comprehensive DSS recommendations
         function showClaimDetails(claimId) {
             const claim = mockClaims.find(c => c.id === claimId);
             if (!claim) return;

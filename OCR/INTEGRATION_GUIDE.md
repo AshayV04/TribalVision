@@ -1,6 +1,6 @@
 # FRA OCR Integration Guide
 
-This guide explains how to integrate the OCR functionality with your FRA Atlas WebGIS system.
+This guide explains how to integrate the OCR functionality with your TribalVision system.
 
 ## Overview
 
@@ -362,4 +362,4 @@ For issues or questions:
 
 ## License
 
-This OCR integration is part of the FRA Atlas WebGIS system and follows the same licensing terms.
+This OCR integration is part of the TribalVision system and follows the same licensing terms.

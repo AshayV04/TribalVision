@@ -1,6 +1,6 @@
 # FRA OCR Integration
 
-This directory contains the OCR (Optical Character Recognition) integration for the FRA Atlas WebGIS system. It provides automated document processing capabilities for FRA claim forms using Tesseract OCR and Google's Gemini AI.
+This directory contains the OCR (Optical Character Recognition) integration for the TribalVision system. It provides automated document processing capabilities for FRA claim forms using Tesseract OCR and Google's Gemini AI.
 
 ## Features
 
@@ -178,7 +178,7 @@ python flask_ocr_api.py
 
 ## Integration with FRA Atlas
 
-The OCR system integrates seamlessly with the FRA Atlas WebGIS:
+The OCR system integrates seamlessly with the TribalVision:
 
 1. **Frontend Integration**: The claims management page includes upload functionality
 2. **Data Flow**: Documents → OCR → AI Extraction → Database → WebGIS Display

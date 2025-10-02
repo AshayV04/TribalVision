@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FRA Claims Management - TribalVision</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="../js/config.js"></script>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background" style="height: 100vh;">
+    <!-- Header -->
+    <header class="bg-white shadow-md border-b border-border-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center">
+                    <div class="bg-primary-800 p-2 rounded-lg mr-3">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-text-primary">TribalVision</h1>
+                        <p class="text-sm text-text-secondary">Claims Management System</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="main_dashboard.html" class="text-text-secondary hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="fra_claims_management.html" class="bg-primary-100 text-primary-700 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-file-alt mr-2"></i>Claims Management
+                    </a>
+                    <a href="ai_asset_mapping.html" class="text-text-secondary hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-map mr-2"></i>Asset Mapping
+                    </a>
+                    <a href="scheme_recommendations.html" class="text-text-secondary hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                    </a>
+                    <a href="village_analytics.html" class="text-text-secondary hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-chart-bar mr-2"></i>Village Analytics
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-text-primary">Admin User</p>
+                        <p class="text-xs text-text-secondary">Government Official</p>
+                    </div>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="bg-primary-600 text-white p-2 rounded-full hover:bg-primary-700 transition-colors">
+                            <i class="fas fa-user w-4 h-4"></i>
+                        </button>
+                        <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <a href="login.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Page Header -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-semibold text-text-primary">FRA Claims Management</h2>
+                    <p class="text-text-secondary mt-1">Manage and track Forest Rights Act claims across all regions</p>
+                </div>
+                <div class="flex gap-3">
+                    <button id="addClaimBtn" class="btn-primary flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        Add New Claim
+                    </button>
+                    <button id="uploadDocumentBtn" class="btn-secondary flex items-center gap-2">
+                        <i class="fas fa-file-upload"></i>
+                        Upload Document
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="floating-panel p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Status</label>
+                    <select id="statusFilter" class="form-input w-full">
+                        <option value>All Statuses</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="under_review">Under Review</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="on_hold">On Hold</option>
+                    </select>
+                </div>
+
+                <!-- Date Range -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Submission Date</label>
+                    <input type="date" id="dateFrom" class="form-input w-full" placeholder="From Date" />
+                </div>
+
+                <!-- Tribal Group Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Tribal Group</label>
+                    <select id="tribalGroupFilter" class="form-input w-full">
+                        <option value>All Groups</option>
+                        <option value="gond">Gond</option>
+                        <option value="bhil">Bhil</option>
+                        <option value="santhal">Santhal</option>
+                        <option value="oraon">Oraon</option>
+                        <option value="munda">Munda</option>
+                    </select>
+                </div>
+
+                <!-- Geographic Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">District</label>
+                    <select id="districtFilter" class="form-input w-full">
+                        <option value>All Districts</option>
+                        <option value="bastar">Bastar</option>
+                        <option value="dantewada">Dantewada</option>
+                        <option value="kanker">Kanker</option>
+                        <option value="kondagaon">Kondagaon</option>
+                        <option value="narayanpur">Narayanpur</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search and Actions -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search claims by ID, name, or village..." class="form-input w-full pl-10" />
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button id="resetFiltersBtn" class="px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-undo mr-2"></i>Reset
+                    </button>
+                    <button id="exportBtn" class="btn-secondary flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Count -->
+            <div class="mt-4 text-sm text-text-secondary">
+                Showing <span id="resultsCount" class="font-medium text-text-primary">247</span> claims
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Claims Table -->
+            <div class="lg:col-span-2">
+                <div class="floating-panel overflow-hidden">
+                    <!-- Table Header -->
+                    <div class="px-6 py-4 border-b border-border-light bg-background">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-medium text-text-primary">Claims List</h3>
+                            <div class="flex items-center gap-2">
+                                <button id="bulkActionsBtn" class="text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50" disabled>
+                                    <i class="fas fa-tasks mr-1"></i>Bulk Actions
+                                </button>
+                                <span class="text-sm text-text-secondary">|</span>
+                                <button id="refreshBtn" class="text-sm text-primary-600 hover:text-primary-700">
+                                    <i class="fas fa-sync-alt mr-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full data-table">
+                            <thead>
+                                <tr class="bg-background">
+                                    <th class="text-left py-3 px-4">
+                                        <input type="checkbox" id="selectAll" class="rounded border-border-light" />
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="claim_id">
+                                        Claim ID <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="applicant">
+                                        Applicant <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="tribal_group">
+                                        Tribal Group <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="village">
+                                        Village <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="area">
+                                        Area (Ha) <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="date">
+                                        Submitted <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4 cursor-pointer hover:bg-gray-100" data-sort="status">
+                                        Status <i class="fas fa-sort ml-1 text-text-secondary"></i>
+                                    </th>
+                                    <th class="text-left py-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="claimsTableBody">
+                                <!-- Sample Claims Data -->
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025001">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025001</td>
+                                    <td class="py-3 px-4">Ramesh Kumar Gond</td>
+                                    <td class="py-3 px-4">Gond</td>
+                                    <td class="py-3 px-4">Jagdalpur</td>
+                                    <td class="py-3 px-4">2.5</td>
+                                    <td class="py-3 px-4">15/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Under Review</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025002">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025002</td>
+                                    <td class="py-3 px-4">Sunita Bhil</td>
+                                    <td class="py-3 px-4">Bhil</td>
+                                    <td class="py-3 px-4">Kondagaon</td>
+                                    <td class="py-3 px-4">1.8</td>
+                                    <td class="py-3 px-4">12/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Approved</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025003">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025003</td>
+                                    <td class="py-3 px-4">Arjun Santhal</td>
+                                    <td class="py-3 px-4">Santhal</td>
+                                    <td class="py-3 px-4">Narayanpur</td>
+                                    <td class="py-3 px-4">3.2</td>
+                                    <td class="py-3 px-4">10/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Pending Review</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025004">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025004</td>
+                                    <td class="py-3 px-4">Meera Oraon</td>
+                                    <td class="py-3 px-4">Oraon</td>
+                                    <td class="py-3 px-4">Kanker</td>
+                                    <td class="py-3 px-4">2.1</td>
+                                    <td class="py-3 px-4">08/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">On Hold</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025005">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025005</td>
+                                    <td class="py-3 px-4">Vikram Munda</td>
+                                    <td class="py-3 px-4">Munda</td>
+                                    <td class="py-3 px-4">Dantewada</td>
+                                    <td class="py-3 px-4">4.0</td>
+                                    <td class="py-3 px-4">05/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Rejected</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025006">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025006</td>
+                                    <td class="py-3 px-4">Savitri Kole</td>
+                                    <td class="py-3 px-4">Kole</td>
+                                    <td class="py-3 px-4">Bijapur</td>
+                                    <td class="py-3 px-4">2.9</td>
+                                    <td class="py-3 px-4">03/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Accepted</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 cursor-pointer claim-row" data-claim-id="FRA2025007">
+                                    <td class="py-3 px-4">
+                                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-primary-600">FRA2025007</td>
+                                    <td class="py-3 px-4">Bhojan Nayak</td>
+                                    <td class="py-3 px-4">Nayak</td>
+                                    <td class="py-3 px-4">Sukma</td>
+                                    <td class="py-3 px-4">1.4</td>
+                                    <td class="py-3 px-4">01/08/2024</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Rejected</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </button>
+                                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 border-t border-border-light bg-background">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-text-secondary">
+                                Showing 1 to 7 of 247 results
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1 border border-border-light rounded text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                                    Previous
+                                </button>
+                                <button class="px-3 py-1 bg-primary-600 text-white rounded text-sm">1</button>
+                                <button class="px-3 py-1 border border-border-light rounded text-sm hover:bg-gray-50">2</button>
+                                <button class="px-3 py-1 border border-border-light rounded text-sm hover:bg-gray-50">3</button>
+                                <button class="px-3 py-1 border border-border-light rounded text-sm hover:bg-gray-50">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claim Details Panel -->
+            <div class="lg:col-span-1">
+                <div class="floating-panel p-6 sticky top-6">
+                    <div id="claimDetailsContent">
+                        <!-- Default State -->
+                        <div id="defaultState" class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-file-alt text-2xl text-text-secondary"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-text-primary mb-2">Select a Claim</h3>
+                            <p class="text-text-secondary">Click on any claim from the table to view detailed information and recommendations.</p>
+                        </div>
+
+                        <!-- Claim Details (Hidden by default) -->
+                        <div id="claimDetails" class="hidden">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-text-primary">Claim Details</h3>
+                                <button id="closeDetailsBtn" class="text-text-secondary hover:text-text-primary">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <!-- Claim Info -->
+                            <div class="space-y-4 mb-6">
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Claim ID:</span>
+                                    <span id="detailClaimId" class="font-medium text-text-primary">FRA2025001</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Applicant:</span>
+                                    <span id="detailApplicant" class="font-medium text-text-primary">Ramesh Kumar Gond</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Tribal Group:</span>
+                                    <span id="detailTribalGroup" class="font-medium text-text-primary">Gond</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Village:</span>
+                                    <span id="detailVillage" class="font-medium text-text-primary">Jagdalpur</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Land Area:</span>
+                                    <span id="detailArea" class="font-medium text-text-primary">2.5 Ha</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Status:</span>
+                                    <span id="detailStatus" class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Under Review</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Assigned Officer:</span>
+                                    <span id="detailOfficer" class="font-medium text-text-primary">Dr. Priya Sharma</span>
+                                </div>
+                            </div>
+
+                            <!-- Processing History -->
+                            <div class="mb-6">
+                                <h4 class="font-medium text-text-primary mb-3">Processing History</h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text-primary">Application Submitted</p>
+                                            <p class="text-xs text-text-secondary">15/08/2024 - 10:30 AM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text-primary">Initial Review Completed</p>
+                                            <p class="text-xs text-text-secondary">18/08/2024 - 2:15 PM</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text-primary">Field Verification Pending</p>
+                                            <p class="text-xs text-text-secondary">Scheduled for 25/08/2024</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AI Recommendations -->
+                            <div class="mb-6">
+                                <h4 class="font-medium text-text-primary mb-3">AI-Generated Recommendations</h4>
+                                <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-robot text-primary-600"></i>
+                                        <span class="text-sm font-medium text-primary-800">Scheme Eligibility</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-primary-700">PM-KISAN:</span>
+                                            <span class="font-medium text-green-600">Eligible</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-primary-700">DAJGUA:</span>
+                                            <span class="font-medium text-green-600">Eligible</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-primary-700">Jal Shakti:</span>
+                                            <span class="font-medium text-yellow-600">Conditional</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Priority Score -->
+                            <div class="mb-6">
+                                <h4 class="font-medium text-text-primary mb-3">Intervention Priority</h4>
+                                <div class="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-secondary-800">Priority Score</span>
+                                        <span class="text-lg font-bold text-secondary-600">7.8/10</span>
+                                    </div>
+                                    <div class="progress-bar mb-2">
+                                        <div class="progress-fill success" style="width: 78%"></div>
+                                    </div>
+                                    <p class="text-xs text-secondary-700">High priority based on water index and agricultural potential</p>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="space-y-2">
+                                <button class="btn-primary w-full">
+                                    <i class="fas fa-edit mr-2"></i>Update Status
+                                </button>
+                                <button class="btn-secondary w-full">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>View on Map
+                                </button>
+                                <button class="w-full px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-download mr-2"></i>Download Documents
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OCR Upload Modal -->
+    <div id="ocrUploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Upload FRA Document for OCR Processing</h3>
+                <button id="closeOcrModal" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Upload Section -->
+                <div>
+                    <div class="border-2 border-dashed border-border-light rounded-lg p-8 text-center mb-4" id="dropZone">
+                        <div class="mb-4">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-text-secondary"></i>
+                        </div>
+                        <h4 class="text-lg font-medium text-text-primary mb-2">Upload Document</h4>
+                        <p class="text-text-secondary mb-4">Drag and drop your FRA claim document here, or click to browse</p>
+                        <input type="file" id="documentUpload" accept=".pdf,.jpg,.jpeg,.png" class="hidden" />
+                        <button id="browseFilesBtn" class="btn-primary">
+                            <i class="fas fa-folder-open mr-2"></i>Browse Files
+                        </button>
+                        <p class="text-xs text-text-secondary mt-2">Supported formats: PDF, JPG, PNG (Max 10MB)</p>
+                    </div>
+                    
+                    <!-- Processing Status -->
+                    <div id="processingStatus" class="hidden">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <div>
+                                    <h4 class="font-medium text-blue-800">Processing Document...</h4>
+                                    <p class="text-sm text-blue-600" id="processingStep">Extracting text using OCR</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div>
+                    <div id="ocrResults" class="hidden">
+                        <h4 class="text-lg font-medium text-text-primary mb-4">Extracted Information</h4>
+                        
+                        <!-- Confidence Score -->
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-text-primary">OCR Confidence</span>
+                                <span id="confidenceScore" class="text-sm font-bold text-primary-600">85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="confidenceBar" class="bg-primary-600 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Extracted Data Form -->
+                        <form id="ocrDataForm" class="space-y-4">
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Claimant Name</label>
+                                    <input type="text" id="ocrClaimantName" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Spouse Name</label>
+                                    <input type="text" id="ocrSpouseName" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Father/Mother Name</label>
+                                    <input type="text" id="ocrFatherMotherName" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Village</label>
+                                    <input type="text" id="ocrVillage" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">District</label>
+                                    <input type="text" id="ocrDistrict" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Land Area (Hectares)</label>
+                                    <input type="text" id="ocrLandArea" class="form-input w-full" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-1">Scheduled Tribe</label>
+                                    <select id="ocrScheduledTribe" class="form-input w-full">
+                                        <option value="">Select</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Raw OCR Text -->
+                            <div>
+                                <label class="block text-sm font-medium text-text-primary mb-1">Raw OCR Text</label>
+                                <textarea id="rawOcrText" class="form-input w-full h-32 text-xs" readonly></textarea>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3 pt-4">
+                                <button type="button" id="reprocessBtn" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-redo mr-2"></i>Reprocess
+                                </button>
+                                <button type="submit" id="saveOcrDataBtn" class="flex-1 btn-primary">
+                                    <i class="fas fa-save mr-2"></i>Save as Claim
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="ocrError" class="hidden">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                <div>
+                                    <h4 class="font-medium text-red-800">Processing Failed</h4>
+                                    <p class="text-sm text-red-600" id="errorMessage">Unable to process the document. Please try again.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Claim Modal -->
+    <div id="addClaimModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-text-primary">Add New FRA Claim</h3>
+                <button id="closeAddClaimModal" class="text-text-secondary hover:text-text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="addClaimForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Applicant Name *</label>
+                        <input type="text" class="form-input w-full" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Tribal Group *</label>
+                        <select class="form-input w-full" required>
+                            <option value>Select Tribal Group</option>
+                            <option value="gond">Gond</option>
+                            <option value="bhil">Bhil</option>
+                            <option value="santhal">Santhal</option>
+                            <option value="oraon">Oraon</option>
+                            <option value="munda">Munda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Village *</label>
+                        <input type="text" class="form-input w-full" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">District *</label>
+                        <select class="form-input w-full" required>
+                            <option value>Select District</option>
+                            <option value="bastar">Bastar</option>
+                            <option value="dantewada">Dantewada</option>
+                            <option value="kanker">Kanker</option>
+                            <option value="kondagaon">Kondagaon</option>
+                            <option value="narayanpur">Narayanpur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Land Area (Hectares) *</label>
+                        <input type="number" step="0.1" class="form-input w-full" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-primary mb-2">Contact Number</label>
+                        <input type="tel" class="form-input w-full" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Land Description</label>
+                    <textarea class="form-input w-full h-24" placeholder="Describe the land location and boundaries..."></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelAddClaim" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 btn-primary">
+                        Submit Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // User menu toggle
+        document.getElementById('userMenuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userMenu');
+            const btn = document.getElementById('userMenuBtn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Claim row selection and details display
+        document.querySelectorAll('.claim-row').forEach(row => {
+            row.addEventListener('click', function(e) {
+                if (e.target.type === 'checkbox' || e.target.closest('button')) return;
+                
+                // Remove previous selection
+                document.querySelectorAll('.claim-row').forEach(r => r.classList.remove('bg-primary-50'));
+                
+                // Add selection to current row
+                this.classList.add('bg-primary-50');
+                
+                // Show claim details
+                document.getElementById('defaultState').classList.add('hidden');
+                document.getElementById('claimDetails').classList.remove('hidden');
+                
+                // Update details based on row data
+                const claimId = this.dataset.claimId;
+                const cells = this.querySelectorAll('td');
+                
+                document.getElementById('detailClaimId').textContent = claimId;
+                document.getElementById('detailApplicant').textContent = cells[2].textContent;
+                document.getElementById('detailTribalGroup').textContent = cells[3].textContent;
+                document.getElementById('detailVillage').textContent = cells[4].textContent;
+                document.getElementById('detailArea').textContent = cells[5].textContent + ' Ha';
+                
+                const statusElement = cells[7].querySelector('span');
+                document.getElementById('detailStatus').className = statusElement.className;
+                document.getElementById('detailStatus').textContent = statusElement.textContent;
+            });
+        });
+
+        // Close details panel
+        document.getElementById('closeDetailsBtn').addEventListener('click', function() {
+            document.getElementById('claimDetails').classList.add('hidden');
+            document.getElementById('defaultState').classList.remove('hidden');
+            document.querySelectorAll('.claim-row').forEach(r => r.classList.remove('bg-primary-50'));
+        });
+
+        // Select all checkbox functionality
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.claim-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkActionsButton();
+        });
+
+        // Individual checkbox functionality
+        document.querySelectorAll('.claim-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateBulkActionsButton);
+        });
+
+        function updateBulkActionsButton() {
+            const checkedBoxes = document.querySelectorAll('.claim-checkbox:checked');
+            const bulkBtn = document.getElementById('bulkActionsBtn');
+            bulkBtn.disabled = checkedBoxes.length === 0;
+        }
+
+        // Filter functionality
+        function applyFilters() {
+            // This would typically filter the table data
+            // For demo purposes, we'll just update the results count
+            const count = Math.floor(Math.random() * 200) + 50;
+            document.getElementById('resultsCount').textContent = count;
+        }
+
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('dateFrom').addEventListener('change', applyFilters);
+        document.getElementById('tribalGroupFilter').addEventListener('change', applyFilters);
+        document.getElementById('districtFilter').addEventListener('change', applyFilters);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+        // Reset filters
+        document.getElementById('resetFiltersBtn').addEventListener('click', function() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('tribalGroupFilter').value = '';
+            document.getElementById('districtFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultsCount').textContent = '247';
+        });
+
+        // Export functionality
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('Export functionality would download filtered results as CSV/Excel file.');
+        });
+
+        // OCR Upload modal
+        document.getElementById('uploadDocumentBtn').addEventListener('click', function() {
+            document.getElementById('ocrUploadModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeOcrModal').addEventListener('click', function() {
+            document.getElementById('ocrUploadModal').classList.add('hidden');
+            resetOcrModal();
+        });
+
+        // File upload handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('documentUpload');
+        const browseBtn = document.getElementById('browseFilesBtn');
+
+        browseBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop functionality
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('border-primary-500', 'bg-primary-50');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary-500', 'bg-primary-50');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary-500', 'bg-primary-50');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // OCR Processing functions
+        function handleFileUpload(file) {
+            // Validate file type and size
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            if (!allowedTypes.includes(file.type)) {
+                showOcrError('Please upload a PDF, JPG, or PNG file.');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                showOcrError('File size must be less than 10MB.');
+                return;
+            }
+
+            // Show processing status
+            showProcessingStatus();
+            
+            // Process file
+            processDocument(file);
+        }
+
+        function showProcessingStatus() {
+            document.getElementById('processingStatus').classList.remove('hidden');
+            document.getElementById('ocrResults').classList.add('hidden');
+            document.getElementById('ocrError').classList.add('hidden');
+        }
+
+        function showOcrError(message) {
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('ocrResults').classList.add('hidden');
+            document.getElementById('ocrError').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showOcrResults(data) {
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('ocrError').classList.add('hidden');
+            document.getElementById('ocrResults').classList.remove('hidden');
+
+            // Update confidence score
+            const confidence = Math.round(data.confidence || 0);
+            document.getElementById('confidenceScore').textContent = confidence + '%';
+            document.getElementById('confidenceBar').style.width = confidence + '%';
+
+            // Populate form fields
+            const extracted = data.extracted_data || {};
+            document.getElementById('ocrClaimantName').value = extracted.claimant_name || '';
+            document.getElementById('ocrSpouseName').value = extracted.spouse_name || '';
+            document.getElementById('ocrFatherMotherName').value = extracted.father_or_mother_name || '';
+            document.getElementById('ocrVillage').value = extracted.village || '';
+            document.getElementById('ocrDistrict').value = extracted.district || '';
+            document.getElementById('ocrLandArea').value = extracted.land_area || '';
+            document.getElementById('ocrScheduledTribe').value = extracted.is_scheduled_tribe || '';
+            document.getElementById('rawOcrText').value = data.raw_text || '';
+
+            // Store current file data for reprocessing
+            window.currentOcrData = data;
+        }
+
+        async function processDocument(file) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Update processing step
+                document.getElementById('processingStep').textContent = 'Uploading document...';
+
+                const response = await fetch(`${window.API_BASE}/upload-document`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to process document');
+                }
+
+                const data = await response.json();
+                showOcrResults(data);
+
+            } catch (error) {
+                console.error('OCR processing error:', error);
+                showOcrError('Failed to process document. Please try again.');
+            }
+        }
+
+        // Reprocess button
+        document.getElementById('reprocessBtn').addEventListener('click', function() {
+            if (window.currentOcrData && window.currentOcrData.filename) {
+                showProcessingStatus();
+                // For reprocessing, we would need to store the original file
+                // For now, just show an alert
+                alert('Reprocessing functionality requires the original file. Please upload the document again.');
+            }
+        });
+
+        // Save OCR data as claim
+        document.getElementById('ocrDataForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!window.currentOcrData) {
+                alert('No OCR data available to save.');
+                return;
+            }
+
+            try {
+                const formData = {
+                    filename: window.currentOcrData.filename,
+                    claimant_name: document.getElementById('ocrClaimantName').value,
+                    spouse_name: document.getElementById('ocrSpouseName').value,
+                    father_or_mother_name: document.getElementById('ocrFatherMotherName').value,
+                    village: document.getElementById('ocrVillage').value,
+                    district: document.getElementById('ocrDistrict').value,
+                    land_area: document.getElementById('ocrLandArea').value,
+                    is_scheduled_tribe: document.getElementById('ocrScheduledTribe').value,
+                    full_address: window.currentOcrData.full_address,
+                    raw_text: window.currentOcrData.raw_text,
+                    confidence: window.currentOcrData.confidence
+                };
+
+                const response = await fetch(`${window.API_BASE}/save-claim`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Claim saved successfully!');
+                    document.getElementById('ocrUploadModal').classList.add('hidden');
+                    resetOcrModal();
+                    // Refresh the claims table
+                    loadClaims();
+                } else {
+                    throw new Error('Failed to save claim');
+                }
+
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('Failed to save claim. Please try again.');
+            }
+        });
+
+        function resetOcrModal() {
+            document.getElementById('documentUpload').value = '';
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('ocrResults').classList.add('hidden');
+            document.getElementById('ocrError').classList.add('hidden');
+            document.getElementById('ocrDataForm').reset();
+            window.currentOcrData = null;
+        }
+
+        // Add claim modal
+        document.getElementById('addClaimBtn').addEventListener('click', function() {
+            document.getElementById('addClaimModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeAddClaimModal').addEventListener('click', function() {
+            document.getElementById('addClaimModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelAddClaim').addEventListener('click', function() {
+            document.getElementById('addClaimModal').classList.add('hidden');
+        });
+
+        // Add claim form submission
+        document.getElementById('addClaimForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('New claim would be submitted to the system.');
+            document.getElementById('addClaimModal').classList.add('hidden');
+            this.reset();
+        });
+
+        // Table sorting functionality
+        document.querySelectorAll('[data-sort]').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortBy = this.dataset.sort;
+                // This would implement actual sorting logic
+                console.log('Sorting by:', sortBy);
+                
+                // Update sort icons
+                document.querySelectorAll('[data-sort] i').forEach(icon => {
+                    icon.className = 'fas fa-sort ml-1 text-text-secondary';
+                });
+                this.querySelector('i').className = 'fas fa-sort-up ml-1 text-primary-600';
+            });
+        });
+
+        // Refresh data
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.classList.add('fa-spin');
+            
+            loadClaims().then(() => {
+                icon.classList.remove('fa-spin');
+                alert('Data refreshed successfully.');
+            }).catch(() => {
+                icon.classList.remove('fa-spin');
+                alert('Failed to refresh data.');
+            });
+        });
+
+        // Load claims from API
+        async function loadClaims() {
+            try {
+                const response = await fetch(`${window.API_BASE}/claims`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateClaimsTable(data.claims);
+                    document.getElementById('resultsCount').textContent = data.count;
+                } else {
+                    console.error('Failed to load claims');
+                }
+            } catch (error) {
+                console.error('Error loading claims:', error);
+            }
+        }
+
+        function updateClaimsTable(claims) {
+            const tbody = document.getElementById('claimsTableBody');
+            tbody.innerHTML = '';
+
+            claims.forEach(claim => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 cursor-pointer claim-row';
+                row.setAttribute('data-claim-id', claim.id);
+                
+                const statusClass = getStatusClass(claim.status);
+                const statusText = getStatusText(claim.status);
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4">
+                        <input type="checkbox" class="claim-checkbox rounded border-border-light" />
+                    </td>
+                    <td class="py-3 px-4 font-medium text-primary-600">${formatClaimId(claim.id)}</td>
+                    <td class="py-3 px-4">${claim.claimant_name || 'N/A'}</td>
+                    <td class="py-3 px-4">${getTribalGroup(claim.claimant_name)}</td>
+                    <td class="py-3 px-4">${claim.village || 'N/A'}</td>
+                    <td class="py-3 px-4">${claim.land_area || 'N/A'}</td>
+                    <td class="py-3 px-4">${formatDate(claim.created_at)}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex gap-2">
+                            <button class="text-primary-600 hover:text-primary-700" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-secondary-600 hover:text-secondary-700" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-700 accept-claim-btn" title="Accept Claim" data-claim-id="${claim.id}">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </button>
+                            <button class="text-accent-600 hover:text-accent-700" title="Update Status">
+                                <i class="fas fa-clipboard-check"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-700 delete-claim-btn" title="Delete Claim" data-claim-id="${claim.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Re-attach event listeners
+            attachClaimRowListeners();
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'approved': return 'bg-green-100 text-green-800';
+                case 'accepted': return 'bg-green-100 text-green-800';
+                case 'rejected': return 'bg-red-100 text-red-800';
+                case 'on_hold': return 'bg-red-100 text-red-800';
+                case 'under_review': return 'bg-yellow-100 text-yellow-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'approved': return 'Approved';
+                case 'accepted': return 'Accepted';
+                case 'rejected': return 'Rejected';
+                case 'on_hold': return 'On Hold';
+                case 'under_review': return 'Under Review';
+                default: return 'Pending Review';
+            }
+        }
+
+        function getTribalGroup(name) {
+            // Simple mapping based on common tribal names
+            if (!name) return 'N/A';
+            const tribalNames = ['Gond', 'Bhil', 'Santhal', 'Oraon', 'Munda', 'KBPCOES'];
+            for (const tribal of tribalNames) {
+                if (name.includes(tribal)) return tribal;
+            }
+            return 'Other';
+        }
+
+        function formatClaimId(claimId) {
+            if (claimId === null || claimId === undefined) return '';
+            const idString = claimId.toString();
+            return idString.startsWith('FRA') ? idString : `FRA${idString.padStart(6, '0')}`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB');
+        }
+
+        function attachClaimRowListeners() {
+            document.querySelectorAll('.claim-row').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.type === 'checkbox' || e.target.closest('button')) return;
+                    
+                    // Remove previous selection
+                    document.querySelectorAll('.claim-row').forEach(r => r.classList.remove('bg-primary-50'));
+                    
+                    // Add selection to current row
+                    this.classList.add('bg-primary-50');
+                    
+                    // Show claim details
+                    document.getElementById('defaultState').classList.add('hidden');
+                    document.getElementById('claimDetails').classList.remove('hidden');
+                    
+                    // Update details based on row data
+                    const claimId = this.dataset.claimId || this.getAttribute('data-claim-id');
+                    const cells = this.querySelectorAll('td');
+                    
+                    document.getElementById('detailClaimId').textContent = formatClaimId(claimId);
+                    document.getElementById('detailApplicant').textContent = cells[2].textContent;
+                    document.getElementById('detailTribalGroup').textContent = cells[3].textContent;
+                    document.getElementById('detailVillage').textContent = cells[4].textContent;
+                    document.getElementById('detailArea').textContent = cells[5].textContent + ' Ha';
+                    
+                    const statusElement = cells[7].querySelector('span');
+                    document.getElementById('detailStatus').className = statusElement.className;
+                    document.getElementById('detailStatus').textContent = statusElement.textContent;
+                });
+            });
+
+            // Add accept button listeners
+            document.querySelectorAll('.accept-claim-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const row = this.closest('tr');
+                    const claimId = this.dataset.claimId || (row ? row.dataset.claimId : '');
+                    if (!claimId) return;
+                    const claimName = row ? row.querySelector('td:nth-child(3)').textContent : '';
+                    const formattedId = formatClaimId(claimId);
+                    const claimLabel = claimName ? ` (${claimName})` : '';
+
+                    if (confirm(`Mark claim ${formattedId}${claimLabel} as accepted?`)) {
+                        acceptClaim(claimId);
+                    }
+                });
+            });
+
+            // Add delete button listeners
+            document.querySelectorAll('.delete-claim-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent row click
+                    const row = this.closest('tr');
+                    const claimId = this.dataset.claimId || (row ? row.dataset.claimId : '');
+                    if (!claimId) return;
+                    const claimName = row ? row.querySelector('td:nth-child(3)').textContent : '';
+                    const formattedId = formatClaimId(claimId);
+                    const claimLabel = claimName ? ` (${claimName})` : '';
+                    
+                    if (confirm(`Are you sure you want to delete claim ${formattedId}${claimLabel}?`)) {
+                        deleteClaim(claimId);
+                    }
+                });
+            });
+        }
+
+        async function acceptClaim(claimId) {
+            try {
+                const response = await fetch(`${window.API_BASE}/claims/${claimId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'accepted' })
+                });
+
+                if (response.ok) {
+                    alert('Claim accepted successfully!');
+                    loadClaims();
+                } else {
+                    throw new Error('Failed to accept claim');
+                }
+            } catch (error) {
+                console.error('Accept error:', error);
+                alert('Failed to accept claim. Please try again.');
+            }
+        }
+
+        async function deleteClaim(claimId) {
+            try {
+                const response = await fetch(`${window.API_BASE}/claims/${claimId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Claim deleted successfully!');
+                    // Refresh the claims list
+                    loadClaims();
+                } else {
+                    throw new Error('Failed to delete claim');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete claim. Please try again.');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const user = localStorage.getItem('fraUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Set current date as default for date filter
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = today;
+            
+            // Attach interactions for initial placeholder rows
+            attachClaimRowListeners();
+
+            // Load claims from API
+            loadClaims();
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
