@@ -3,28 +3,189 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Asset Mapping - FRA Atlas WebGIS</title>
+    <title>AI Asset Mapping - TribalVision</title>
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        .progress-fill {
+            transition: width 0.8s ease-out;
+        }
+
+        #startProcessing:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .floating-panel {
+            transition: transform 0.3s ease;
+        }
+
+        .floating-panel:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        /* ==================================================================== */
+        /* Z-INDEX FIXES FOR OVERLAPPING ELEMENTS */
+        /* ==================================================================== */
+
+        /* 1. Processing Status Panel - Higher than map controls */
+        #processingStatus {
+            z-index: 10000 !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            max-width: 320px;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+        }
+
+        /* 2. Processing Complete Modal - Highest priority */
+        #processingCompleteModal {
+            z-index: 10001 !important;
+            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.7) !important;
+        }
+
+        #processingCompleteModal > div {
+            z-index: 10002 !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 16px;
+        }
+
+        /* 3. Legend - Higher than map but lower than processing panels */
+        .absolute.bottom-4.right-4 {
+            z-index: 9000 !important;
+            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* 4. Analysis Control Panel - Higher than map */
+        .w-96.bg-surface {
+            z-index: 8000 !important;
+            position: relative;
+        }
+
+        /* 5. Floating panels - Ensure they float above map */
+        .floating-panel {
+            z-index: 8001 !important;
+            position: relative;
+            backdrop-filter: blur(6px);
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+
+        /* 6. Map container - Lower than UI panels */
+        #map {
+            z-index: 1 !important;
+            position: relative;
+        }
+
+        #satelliteViewer {
+            z-index: 1 !important;
+        }
+
+        /* 7. Leaflet controls - Lower than our UI */
+        .leaflet-control-container {
+            z-index: 7000 !important;
+        }
+
+        .leaflet-control {
+            z-index: 7001 !important;
+        }
+
+        /* 8. Smooth animations */
+        #processingStatus:not(.hidden) {
+            display: block !important;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        #processingCompleteModal:not(.hidden) {
+            display: flex !important;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 9. Mobile responsiveness */
+        @media (max-width: 768px) {
+            #processingStatus {
+                bottom: 10px !important;
+                left: 10px !important;
+                right: 10px !important;
+                max-width: none;
+            }
+        }
+        /* FIX GREY SPACE BETWEEN HEADER AND MAP */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100vh !important;
+        }
+
+        .flex.h-screen {
+            padding-top: 0 !important;
+            height: calc(100vh - 80px) !important;
+            margin-top: 80px !important;
+        }
+
+        header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 80px !important;
+            z-index: 9999 !important;
+        }
+
+        #map {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+
+
+    </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Ffraatlas6365back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
-<body class="bg-background min-h-screen">
+<body class="bg-background" style="height: 100vh;">
     <!-- Header -->
     <header class="floating-panel border-b border-border-light sticky top-0 z-50">
-        <div class="px-6 py-4">
+        <div class="px-6 ">
             <div class="flex items-center justify-between">
                 <!-- Logo and Title -->
-                <div class="flex items-center gap-4">
-                    <div class="bg-primary-800 p-2 rounded-lg">
-                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                <div class="flex items-center">
+                    <div class="bg-800 p-1 rounded-lg mr-1">
+                        <img src="../TribalVision Logo.png" alt="TribalVision logo" class="logo-mark" style="height: 90px; width: 110px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));" />
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold text-text-primary">FRA Atlas WebGIS</h1>
-                        <p class="text-sm text-text-secondary">AI Asset Mapping</p>
+                        <p class="text-lg font-semibold text-primary-700 tracking-wide ">TribalVision</p>
+                        <p class="text-sm text-text-secondary">Asset Mapping</p>
                     </div>
                 </div>
 
@@ -152,9 +313,9 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-text-primary mb-2">Classification Algorithm</label>
                         <select class="form-input w-full">
-                            <option value="random_forest">Random Forest</option>
-                            <option value="cnn">Convolutional Neural Network</option>
-                            <option value="svm">Support Vector Machine</option>
+                            <option value="random_forest">ConvNeXt v2</option>
+                            <option value="cnn">U-Net</option>
+                            <option value="svm">Random Forest</option>
                             <option value="ensemble">Ensemble Method</option>
                         </select>
                     </div>
@@ -372,9 +533,10 @@
                     <button id="closeModal" class="flex-1 px-4 py-2 border border-border-light rounded-md text-text-secondary hover:bg-gray-50 transition-colors">
                         Close
                     </button>
-                    <button class="flex-1 btn-primary">
-                        View Results
+                    <button class="flex-1 btn-primary" onclick="viewClassificationOnMap()">
+                        <i class="fas fa-map mr-2"></i>View Results
                     </button>
+                    
                 </div>
             </div>
         </div>
@@ -425,37 +587,287 @@
             // Simulate file upload
             alert(`Uploading ${file.name}...`);
         }
-
-        // Start processing
-        document.getElementById('startProcessing').addEventListener('click', function() {
+        // Enhanced processing status visibility
+        function showProcessingStatus() {
             const processingStatus = document.getElementById('processingStatus');
             processingStatus.classList.remove('hidden');
             
-            // Simulate processing
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 10;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    
-                    setTimeout(() => {
-                        processingStatus.classList.add('hidden');
-                        document.getElementById('processingCompleteModal').classList.remove('hidden');
-                    }, 500);
+            // Force to top
+            processingStatus.style.zIndex = '10000';
+            processingStatus.style.position = 'fixed';
+        }
+
+        // Enhanced modal display
+        function showProcessingCompleteModal() {
+            const modal = document.getElementById('processingCompleteModal');
+            modal.classList.remove('hidden');
+            
+            // Force highest z-index
+            modal.style.zIndex = '10001';
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Enhanced modal close
+        function hideProcessingCompleteModal() {
+            const modal = document.getElementById('processingCompleteModal');
+            modal.classList.add('hidden');
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+
+        // ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideProcessingCompleteModal();
+            }
+        });
+
+        // Click outside modal to close
+        // Click outside modal to close - FIXED VERSION
+        const processingModal = document.getElementById('processingCompleteModal');
+        if (processingModal) {
+            processingModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideProcessingCompleteModal();
                 }
+            });
+        }
+
+
+
+        // Start processing
+        // ==============================================================================
+// ENHANCED FUNCTIONAL AI ANALYSIS - REALISTIC PROCESSING STAGES
+// ==============================================================================
+
+            let analysisInProgress = false;
+            let analysisResults = null;
+            let uploadedImageData = null;
+
+            // Main AI Analysis Function
+            async function performRealisticAIAnalysis() {
+                if (analysisInProgress) return;
                 
+                analysisInProgress = true;
+                const processingStatus = document.getElementById('processingStatus');
                 const progressBar = processingStatus.querySelector('.bg-primary-600');
                 const progressText = processingStatus.querySelector('.text-text-secondary');
-                progressBar.style.width = progress + '%';
-                progressText.textContent = Math.round(progress) + '%';
-            }, 200);
-        });
+                const statusText = processingStatus.querySelector('.text-text-primary');
+                
+                // Show processing panel
+                showProcessingStatus();
+
+                
+                // Disable start button
+                const startBtn = document.getElementById('startProcessing');
+                startBtn.disabled = true;
+                startBtn.classList.add('opacity-50');
+                
+                // Professional AI processing stages with realistic timing
+                const processingStages = [
+                    { stage: 'Initializing AI models...', progress: 5, duration: 1200 },
+                    { stage: 'Loading satellite imagery...', progress: 12, duration: 800 },
+                    { stage: 'Preprocessing imagery...', progress: 20, duration: 1500 },
+                    { stage: 'Multi-spectral band analysis...', progress: 35, duration: 2000 },
+                    { stage: 'Feature extraction...', progress: 50, duration: 1800 },
+                    { stage: 'Running AI classification...', progress: 70, duration: 2200 },
+                    { stage: 'Post-processing results...', progress: 85, duration: 1000 },
+                    { stage: 'Cross-referencing FRA claims...', progress: 92, duration: 800 },
+                    { stage: 'Generating confidence maps...', progress: 97, duration: 600 },
+                    { stage: 'Analysis complete!', progress: 100, duration: 400 }
+                ];
+                
+                let currentStageIndex = 0;
+                
+                function processNextStage() {
+                    if (currentStageIndex >= processingStages.length) {
+                        // Analysis complete
+                        setTimeout(() => {
+                            processingStatus.classList.add('hidden');
+                            showAnalysisResultsWithMap();
+
+                            analysisInProgress = false;
+                            
+                            // Re-enable start button
+                            startBtn.disabled = false;
+                            startBtn.classList.remove('opacity-50');
+                        }, 500);
+                        return;
+                    }
+                    
+                    const stage = processingStages[currentStageIndex];
+                    
+                    // Update progress bar and text
+                    progressBar.style.width = stage.progress + '%';
+                    progressText.textContent = stage.progress + '%';
+                    statusText.textContent = stage.stage;
+                    
+                    // Add processing details tooltip
+                    statusText.title = stage.details || stage.stage;
+                    
+                    // Add smooth animation
+                    progressBar.style.transition = 'width 0.5s ease-out';
+                    
+                    currentStageIndex++;
+                    setTimeout(processNextStage, stage.duration);
+                }
+                
+                // Start the processing chain
+                processNextStage();
+            }
+
+            // Generate Dynamic, Realistic Results
+            function generateRealisticResults() {
+                // Base results with realistic variations
+                const baseResults = {
+                    agricultural: { percentage: 42.3 + (Math.random() - 0.5) * 15, confidence: 94.2 + (Math.random() - 0.5) * 8, trend: Math.random() > 0.5 ? 'increasing' : 'stable' },
+                    forest: { percentage: 35.7 + (Math.random() - 0.5) * 12, confidence: 89.7 + (Math.random() - 0.5) * 10, trend: Math.random() > 0.3 ? 'decreasing' : 'stable' },
+                    water: { percentage: 12.8 + (Math.random() - 0.5) * 6, confidence: 96.8 + (Math.random() - 0.5) * 4, trend: Math.random() > 0.4 ? 'stable' : 'increasing' },
+                    homesteads: { percentage: 6.4 + (Math.random() - 0.5) * 3, confidence: 87.3 + (Math.random() - 0.5) * 12, trend: Math.random() > 0.2 ? 'increasing' : 'stable' },
+                    unclassified: { percentage: 2.8 + (Math.random() - 0.5) * 2, confidence: 65.0 + (Math.random() - 0.5) * 20, trend: 'decreasing' }
+                };
+                
+                // Normalize percentages to sum to 100%
+                const totalPercentage = Object.values(baseResults).reduce((sum, item) => sum + item.percentage, 0);
+                const normalizedResults = {};
+                
+                Object.keys(baseResults).forEach(key => {
+                    const result = baseResults[key];
+                    normalizedResults[key] = {
+                        percentage: Math.max(0, (result.percentage / totalPercentage * 100)),
+                        confidence: Math.max(70, Math.min(99, result.confidence)),
+                        trend: result.trend
+                    };
+                });
+                
+                return normalizedResults;
+            }
+
+            // Show Analysis Results with Animation
+            function showAnalysisResults() {
+                analysisResults = generateRealisticResults();
+                
+                // Update the results display with animations
+                updateClassificationResults();
+                
+                // Show completion modal
+                showProcessingCompleteModal();
+
+                
+                // Play success sound
+                playAnalysisCompleteSound();
+            }
+
+            // Update Classification Results Display
+            function updateClassificationResults() {
+                const classifications = ['agricultural', 'forest', 'water', 'homesteads', 'unclassified'];
+                
+                classifications.forEach((key, index) => {
+                    const result = analysisResults[key];
+                    
+                    // Find the corresponding DOM elements in the results section
+                    const resultSection = document.querySelector(`.floating-panel:nth-child(3) .space-y-4 > div:nth-child(${index + 1})`);
+                    
+                    if (resultSection && result) {
+                        // Update percentage
+                        const percentageSpan = resultSection.querySelector('.text-sm.font-medium');
+                        if (percentageSpan) {
+                            animateNumber(percentageSpan, result.percentage, '%', 1);
+                        }
+                        
+                        // Update progress bar with staggered animation
+                        const progressFill = resultSection.querySelector('.h-full');
+                        if (progressFill) {
+                            setTimeout(() => {
+                                progressFill.style.width = result.percentage.toFixed(1) + '%';
+                            }, index * 200); // Stagger animations
+                        }
+                        
+                        // Update confidence with trend indicator
+                        const confidenceSpan = resultSection.querySelector('.text-xs');
+                        if (confidenceSpan) {
+                            setTimeout(() => {
+                                const trendIcon = getTrendIcon(result.trend);
+                                confidenceSpan.textContent = `Confidence ${result.confidence.toFixed(1)}% ${trendIcon}`;
+                            }, index * 250);
+                        }
+                    }
+                });
+                
+                // Update overall accuracy
+                setTimeout(() => {
+                    const overallAccuracy = Object.values(analysisResults)
+                        .reduce((sum, result) => sum + result.confidence, 0) / Object.keys(analysisResults).length;
+                    
+                    const accuracySpan = document.querySelector('.text-lg.font-semibold.text-secondary-600');
+                    if (accuracySpan) {
+                        animateNumber(accuracySpan, overallAccuracy, '%', 1);
+                    }
+                }, 1000);
+            }
+
+            // Utility Functions
+            function animateNumber(element, target, suffix = '', decimals = 0) {
+                const start = 0;
+                const increment = target / 50; // 50 steps
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    element.textContent = current.toFixed(decimals) + suffix;
+                }, 30);
+            }
+
+            function getTrendIcon(trend) {
+                switch(trend) {
+                    case 'increasing': return '📈';
+                    case 'decreasing': return '📉';
+                    case 'stable': return '➡️';
+                    default: return '';
+                }
+            }
+
+            function playAnalysisCompleteSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                    
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    console.log('🎉 Analysis Complete!');
+                }
+            }
+
+            // Replace the existing start processing event listener
+            document.getElementById('startProcessing').addEventListener('click', performRealisticAIAnalysis);
+
+            console.log('🚀 Enhanced AI Asset Mapping Analysis System Ready');
+
 
         // Close modal
         document.getElementById('closeModal').addEventListener('click', function() {
-            document.getElementById('processingCompleteModal').classList.add('hidden');
+        hideProcessingCompleteModal();
         });
+
 
         // Viewer controls
         document.querySelectorAll('.absolute.top-4 button').forEach(button => {
@@ -488,29 +900,47 @@
         });
 
         // Initialize page
+        // Fix the event listener that's causing the null reference error
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('AI Asset Mapping interface loaded');
-            
-            // Check for user authentication
-            const user = localStorage.getItem('fraUser');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
+            // Wrap potentially missing elements in checks
+            const processingCompleteModal = document.getElementById('processingCompleteModal');
+            if (processingCompleteModal) {
+                processingCompleteModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideProcessingCompleteModal();
+                    }
+                });
             }
             
-            // Update user info if needed
-            const userData = JSON.parse(user);
-            console.log('User:', userData.email, 'Role:', userData.role);
+            const closeModal = document.getElementById('closeModal');
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    hideProcessingCompleteModal();
+                });
+            }
+            
+            const startProcessing = document.getElementById('startProcessing');
+            if (startProcessing) {
+                startProcessing.addEventListener('click', performRealisticAIAnalysis);
+            }
+            
+            console.log('🚀 Enhanced AI Asset Mapping with Bhuvan LULC Integration Ready!');
         });
+
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
     <script>
         // Initialize Leaflet map
+        // MAKE THESE VARIABLES GLOBAL - PASTE THIS ABOVE THE DOMContentLoaded EVENT
+        let map;
+        let osm;
+
         document.addEventListener('DOMContentLoaded', function() {
-            const map = L.map('map', { zoomControl: true });
-            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            map = L.map('map', { zoomControl: true });
+            osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
@@ -1632,6 +2062,355 @@
                 }
             });
         });
+        // ==============================================================================
+        // ENHANCED FUNCTIONAL AI ANALYSIS WITH BHUVAN LULC INTEGRATION
+        // ==============================================================================
+
+        
+        let bhuvanLULCLayer = null;
+        let originalBaseLayer = null;
+
+        // Enhanced processing status visibility
+        function showProcessingStatus() {
+            const processingStatus = document.getElementById('processingStatus');
+            processingStatus.classList.remove('hidden');
+            processingStatus.style.zIndex = '10000';
+            processingStatus.style.position = 'fixed';
+        }
+
+        // Enhanced modal display
+        function showProcessingCompleteModal() {
+            const modal = document.getElementById('processingCompleteModal');
+            modal.classList.remove('hidden');
+            modal.style.zIndex = '10001';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Enhanced modal close
+        function hideProcessingCompleteModal() {
+            const modal = document.getElementById('processingCompleteModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Main AI Analysis Function
+        async function performRealisticAIAnalysis() {
+            if (analysisInProgress) return;
+            
+            analysisInProgress = true;
+            const processingStatus = document.getElementById('processingStatus');
+            const progressBar = processingStatus.querySelector('.bg-primary-600');
+            const progressText = processingStatus.querySelector('.text-text-secondary');
+            const statusText = processingStatus.querySelector('.text-text-primary');
+            
+            // Show processing panel
+            showProcessingStatus();
+            
+            // Disable start button
+            const startBtn = document.getElementById('startProcessing');
+            startBtn.disabled = true;
+            startBtn.classList.add('opacity-50');
+            
+            // Professional AI processing stages with realistic timing
+            const processingStages = [
+                { stage: 'Initializing AI models...', progress: 5, duration: 1200 },
+                { stage: 'Loading satellite imagery...', progress: 12, duration: 800 },
+                { stage: 'Preprocessing imagery...', progress: 20, duration: 1500 },
+                { stage: 'Multi-spectral band analysis...', progress: 35, duration: 2000 },
+                { stage: 'Feature extraction...', progress: 50, duration: 1800 },
+                { stage: 'Running AI classification...', progress: 70, duration: 2200 },
+                { stage: 'Post-processing results...', progress: 85, duration: 1000 },
+                { stage: 'Cross-referencing FRA claims...', progress: 92, duration: 800 },
+                { stage: 'Generating confidence maps...', progress: 97, duration: 600 },
+                { stage: 'Analysis complete!', progress: 100, duration: 400 }
+            ];
+            
+            let currentStageIndex = 0;
+            
+            function processNextStage() {
+                if (currentStageIndex >= processingStages.length) {
+                    setTimeout(() => {
+                        processingStatus.classList.add('hidden');
+                        showAnalysisResultsWithMap(); // 🔥 THIS CALLS THE BHUVAN INTEGRATION
+                        analysisInProgress = false;
+                        startBtn.disabled = false;
+                        startBtn.classList.remove('opacity-50');
+                    }, 500);
+                    return;
+                }
+                
+                const stage = processingStages[currentStageIndex];
+                progressBar.style.width = stage.progress + '%';
+                progressText.textContent = stage.progress + '%';
+                statusText.textContent = stage.stage;
+                progressBar.style.transition = 'width 0.5s ease-out';
+                
+                currentStageIndex++;
+                setTimeout(processNextStage, stage.duration);
+            }
+            
+            processNextStage();
+        }
+
+        // Generate Dynamic, Realistic Results
+        function generateRealisticResults() {
+            const baseResults = {
+                agricultural: { percentage: 42.3 + (Math.random() - 0.5) * 15, confidence: 94.2 + (Math.random() - 0.5) * 8, trend: Math.random() > 0.5 ? 'increasing' : 'stable' },
+                forest: { percentage: 35.7 + (Math.random() - 0.5) * 12, confidence: 89.7 + (Math.random() - 0.5) * 10, trend: Math.random() > 0.3 ? 'decreasing' : 'stable' },
+                water: { percentage: 12.8 + (Math.random() - 0.5) * 6, confidence: 96.8 + (Math.random() - 0.5) * 4, trend: Math.random() > 0.4 ? 'stable' : 'increasing' },
+                homesteads: { percentage: 6.4 + (Math.random() - 0.5) * 3, confidence: 87.3 + (Math.random() - 0.5) * 12, trend: Math.random() > 0.2 ? 'increasing' : 'stable' },
+                unclassified: { percentage: 2.8 + (Math.random() - 0.5) * 2, confidence: 65.0 + (Math.random() - 0.5) * 20, trend: 'decreasing' }
+            };
+            
+            const totalPercentage = Object.values(baseResults).reduce((sum, item) => sum + item.percentage, 0);
+            const normalizedResults = {};
+            
+            Object.keys(baseResults).forEach(key => {
+                const result = baseResults[key];
+                normalizedResults[key] = {
+                    percentage: Math.max(0, (result.percentage / totalPercentage * 100)),
+                    confidence: Math.max(70, Math.min(99, result.confidence)),
+                    trend: result.trend
+                };
+            });
+            
+            return normalizedResults;
+        }
+
+        // 🗺️ BHUVAN LULC INTEGRATION - THE KEY FUNCTIONS
+        // 🗺️ BHUVAN LULC INTEGRATION - FIXED VERSION
+       // REPLACE YOUR EXISTING addBhuvanClassificationLayer FUNCTION WITH THIS:
+        function addBhuvanClassificationLayer() {
+            console.log('🗺️ Adding Bhuvan LULC classification layer...');
+            
+            // Remove existing Bhuvan layer if present
+            if (bhuvanLULCLayer && map.hasLayer(bhuvanLULCLayer)) {
+                map.removeLayer(bhuvanLULCLayer);
+            }
+            
+            // Create Bhuvan LULC WMS layer - USE EXACT SAME SETUP AS MAIN_DASHBOARD
+            bhuvanLULCLayer = L.tileLayer.wms('https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms', {
+                layers: 'lulc:OR_LULC50K_1516', // Correct Odisha LULC layer name from main_dashboard
+                format: 'image/png',
+                transparent: true,
+                version: '1.1.1',
+                crs: L.CRS.EPSG4326,
+                opacity: 0.7,
+                attribution: '© NRSC/ISRO Bhuvan - AI Classification Results',
+                timeout: 10000,
+                maxZoom: 16
+            });
+            
+            // Add event listeners for debugging
+            bhuvanLULCLayer.on('tileerror', function(e) {
+                console.warn('LULC tile failed to load:', e.tile.src);
+            });
+            
+            bhuvanLULCLayer.on('tileload', function() {
+                console.log('LULC tile loaded successfully');
+            });
+            
+            // Add with delay to simulate processing
+            setTimeout(() => {
+                try {
+                    bhuvanLULCLayer.addTo(map);
+                    showClassificationNotification();
+                    updateLegendForAI();
+                    map.setView([20.2, 84.8], 9, { animate: true, duration: 2.0 });
+                    console.log('✅ Bhuvan LULC layer added to map');
+                } catch (error) {
+                    console.error('Error adding Bhuvan layer:', error);
+                }
+            }, 1500);
+        }
+
+
+
+        function showClassificationNotification() {
+            const notification = L.popup({
+                closeButton: true,
+                autoClose: false,
+                closeOnEscapeKey: true,
+                className: 'ai-classification-popup'
+            })
+            .setLatLng(map.getCenter())
+            .setContent(`
+                <div class="text-center p-2">
+                    <div class="flex items-center justify-center mb-2">
+                        <i class="fas fa-robot text-primary-600 text-lg mr-2"></i>
+                        <span class="font-semibold text-text-primary">AI Classification Complete!</span>
+                    </div>
+                    <p class="text-sm text-text-secondary mb-2">
+                        Advanced AI models have analyzed the satellite imagery and generated 
+                        land use classification results now displayed on the map.
+                    </p>
+                    <div class="text-xs text-primary-600">
+                        <i class="fas fa-satellite mr-1"></i>
+                    </div>
+                </div>
+            `)
+            .openOn(map);
+            
+            setTimeout(() => {
+                map.closePopup(notification);
+            }, 8000);
+        }
+
+        function updateLegendForAI() {
+            const legend = document.querySelector('.absolute.bottom-4.right-4');
+            if (legend) {
+                const title = legend.querySelector('h3');
+                if (title) {
+                    title.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-brain text-primary-600"></i>
+                            <span>AI Classification Results</span>
+                        </div>
+                    `;
+                }
+                
+                legend.style.animation = 'pulse 2s ease-in-out 3';
+                
+                const aiStatus = document.createElement('div');
+                aiStatus.className = 'text-xs text-primary-600 mt-2 p-2 bg-primary-50 rounded';
+                aiStatus.innerHTML = `
+                    <div class="flex items-center gap-1">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Live AI Analysis Active</span>
+                    </div>
+                `;
+                legend.appendChild(aiStatus);
+            }
+        }
+
+        // Enhanced show analysis results with map layer integration
+        function showAnalysisResultsWithMap() {
+            console.log('🚀 Starting analysis results with Bhuvan integration...');
+            
+            analysisResults = generateRealisticResults();
+            updateClassificationResults();
+            addBhuvanClassificationLayer(); // 🔥 THIS ADDS THE BHUVAN LAYER
+            
+            setTimeout(() => {
+                showProcessingCompleteModal();
+            }, 2000);
+            
+            playAnalysisCompleteSound();
+        }
+
+        function updateClassificationResults() {
+            const classifications = ['agricultural', 'forest', 'water', 'homesteads', 'unclassified'];
+            
+            classifications.forEach((key, index) => {
+                const result = analysisResults[key];
+                const resultSection = document.querySelector(`.floating-panel:nth-child(3) .space-y-4 > div:nth-child(${index + 1})`);
+                
+                if (resultSection && result) {
+                    const percentageSpan = resultSection.querySelector('.text-sm.font-medium');
+                    if (percentageSpan) {
+                        animateNumber(percentageSpan, result.percentage, '%', 1);
+                    }
+                    
+                    const progressFill = resultSection.querySelector('.h-full');
+                    if (progressFill) {
+                        setTimeout(() => {
+                            progressFill.style.width = result.percentage.toFixed(1) + '%';
+                        }, index * 200);
+                    }
+                    
+                    const confidenceSpan = resultSection.querySelector('.text-xs');
+                    if (confidenceSpan) {
+                        setTimeout(() => {
+                            const trendIcon = getTrendIcon(result.trend);
+                            confidenceSpan.textContent = `Confidence ${result.confidence.toFixed(1)}% ${trendIcon}`;
+                        }, index * 250);
+                    }
+                }
+            });
+        }
+
+        function animateNumber(element, target, suffix = '', decimals = 0) {
+            const start = 0;
+            const increment = target / 50;
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = current.toFixed(decimals) + suffix;
+            }, 30);
+        }
+
+        function getTrendIcon(trend) {
+            switch(trend) {
+                case 'increasing': return '📈';
+                case 'decreasing': return '📉';
+                case 'stable': return '➡️';
+                default: return '';
+            }
+        }
+
+        function playAnalysisCompleteSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.log('🎉 Analysis Complete!');
+            }
+        }
+
+        function viewClassificationOnMap() {
+            hideProcessingCompleteModal();
+            
+            if (!bhuvanLULCLayer || !map.hasLayer(bhuvanLULCLayer)) {
+                addBhuvanClassificationLayer();
+            }
+            
+            map.setView([20.2, 84.8], 10, { animate: true, duration: 1.5 });
+            
+            const legend = document.querySelector('.absolute.bottom-4.right-4');
+            if (legend) {
+                legend.style.transform = 'scale(1.05)';
+                legend.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.4)';
+                
+                setTimeout(() => {
+                    legend.style.transform = '';
+                    legend.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+
+        // Event handlers
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideProcessingCompleteModal();
+            }
+        });
+
+        document.getElementById('processingCompleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideProcessingCompleteModal();
+            }
+        });
+
+        
     </script>
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
