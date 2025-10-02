@@ -1976,6 +1976,11 @@
                     if (status) {
                         const label = usedPath ? usedPath.split('/').pop() : 'odisha.kml';
                         status.textContent = `District boundaries loaded (${label})`;
+                        setTimeout(() => {
+                            if (status.textContent.includes('District boundaries loaded')) {
+                                status.textContent = '';
+                            }
+                        }, 2500);
                     }
                 } else {
                     if (status) status.textContent = 'KML parser not available';
@@ -2017,6 +2022,11 @@
                 if (status) {
                     const label = usedPath ? usedPath.split('/').pop() : 'or1.geojson';
                     status.textContent = `Village boundaries loaded (${label})`;
+                    setTimeout(() => {
+                        if (status.textContent.includes('Village boundaries loaded')) {
+                            status.textContent = '';
+                        }
+                    }, 2500);
                 }
             } catch (e) {
                 console.error('Village GeoJSON load failed', e);
@@ -2094,7 +2104,14 @@
                         if (lulcLayer && map) {
                             map.addLayer(lulcLayer);
                             console.log('LULC layer added to map');
-                            if (statusElement) statusElement.textContent = 'Land use layer loaded';
+                            if (statusElement) {
+                                statusElement.textContent = 'Land use layer loaded';
+                                setTimeout(() => {
+                                    if (statusElement.textContent === 'Land use layer loaded') {
+                                        statusElement.textContent = '';
+                                    }
+                                }, 2500);
+                            }
                         } else {
                             console.error('Failed to create LULC layer or map not available');
                             if (statusElement) statusElement.textContent = 'Failed to load land use layer - server may be unavailable';
@@ -2107,7 +2124,14 @@
                     if (lulcLayer && map && map.hasLayer(lulcLayer)) {
                         map.removeLayer(lulcLayer);
                         console.log('LULC layer removed from map');
-                        if (statusElement) statusElement.textContent = 'Land use layer hidden';
+                        if (statusElement) {
+                            statusElement.textContent = 'Land use layer hidden';
+                            setTimeout(() => {
+                                if (statusElement.textContent === 'Land use layer hidden') {
+                                    statusElement.textContent = '';
+                                }
+                            }, 2000);
+                        }
                     }
                 }
             });
